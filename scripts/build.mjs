@@ -3,6 +3,7 @@
    מקור אמת אחד לתוכן; ה־HTML נוצר ונשמר בריפו כדי ש־GitHub Pages
    יגיש קבצים סטטיים בלי שום fetch בזמן ריצה.                       */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -13,6 +14,17 @@ const texts = read('data/texts.json');
 const study = read('data/study.json');
 const middot = read('data/middot.json');
 const commentary = (() => { try { return read('data/commentary.json'); } catch { return { refs: {} }; } })();
+
+/* חתימת תוכן על הנכסים. בלעדיה דפדפן שכבר ביקר באתר מקבל CSS ישן
+   מול HTML חדש — וזה נראה כאילו האתר נשבר.                        */
+const stamp = (rel) => {
+  try {
+    const h = createHash('sha1').update(readFileSync(resolve(ROOT, rel))).digest('hex').slice(0, 8);
+    return `${rel}?v=${h}`;
+  } catch { return rel; }
+};
+const CSS = stamp('assets/style.css');
+const JS = stamp('assets/app.js');
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const html = (s) => String(s);               /* שדות שמותר בהם תגיות — נכתבים בידינו */
@@ -26,18 +38,20 @@ const ico = {
 };
 
 /* ── שכבת עיון מספריא ──────────────────────────────────────────
-   נטענת רק אם data/commentary.json מלא. בלעדיה הקטע פשוט לא מופיע.
-   כל מפרש נפתח בנפרד, כדי שההרחבה לא תהיה קיר של טקסט.
-   הראשון (ביאור שטיינזלץ) פתוח — הוא ההסבר הפשוט.               */
+   נטענת רק אם data/commentary.json מלא. כל מפרש נפתח בנפרד,
+   והראשון (ביאור שטיינזלץ) פתוח — הוא ההסבר הפשוט.
+   בלי קישורים החוצה: מי שנכנס ללמוד לא צריך ללכת לאיבוד.        */
+const CHEV = '<span class="chev" aria-hidden="true"></span>';
+
 const voices = (id) => {
   const g = commentary.passages && commentary.passages[id];
   return g ? Object.values(g).filter((v) => v.items && v.items.length) : [];
 };
 
 const voiceBlock = (g, i) => `            <details class="voice"${i === 0 ? ' open' : ''}>
-              <summary class="voice__name">${esc(g.he)}${g.items.length > 1 ? `<span class="voice__n">${g.items.length}</span>` : ''}</summary>
+              <summary>${CHEV}<span>${esc(g.he)}</span>${g.items.length > 1 ? `<span class="voice__n">${g.items.length}</span>` : ''}</summary>
               <div class="voice__body">
-${join(g.items, (it) => `                <p class="voice__t">${esc(it.text)} <a class="voice__src" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer">${esc(it.heRef || it.ref)} ↗</a></p>`)}
+${join(g.items, (it) => `                <p class="voice__t">${esc(it.text)}</p>`)}
               </div>
             </details>`;
 
@@ -46,12 +60,11 @@ const expandFor = (id) => {
   if (!list.length) return '';
   return `        <details class="expand no-print" id="x-${esc(id)}">
           <summary>
-            <span class="expand__label"><span class="expand__more">להרחיב</span><span class="expand__less">לצמצם</span></span>
+            <span class="expand__label">${CHEV}<span class="expand__word">להרחיב</span></span>
             <span class="expand__names">${list.map((g) => esc(g.he)).join(' · ')}</span>
           </summary>
           <div class="expand__body">
 ${list.map(voiceBlock).join('\n')}
-            <p class="expand__foot">מספריא. הטקסט שלמעלה הוא נוסח ״לשון חכמים״ ואינו מוחלף.</p>
           </div>
         </details>`;
 };
@@ -73,7 +86,7 @@ function page({ title, desc, base = '', bodyClass = '', body }) {
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:locale" content="he_IL">
-<link rel="stylesheet" href="${base}assets/style.css">
+<link rel="stylesheet" href="${base}${CSS}">
 <link rel="preload" as="font" type="font/woff2" href="${base}assets/fonts/assistant-hebrew-400-normal.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="${base}assets/fonts/assistant-hebrew-600-normal.woff2" crossorigin>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233B6675'/%3E%3Cpath d='M11 22V10m0 6h10m0-6v12' stroke='%23FAF9F6' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
@@ -87,7 +100,7 @@ var t=d.getItem('kv:theme');if(t==='night'||t==='day')r.setAttribute('data-theme
 <body${bodyClass ? ` class="${bodyClass}"` : ''}>
 <a class="skip" href="#main">דילוג לתוכן</a>
 ${body}
-<script src="${base}assets/app.js" defer></script>
+<script src="${base}${JS}" defer></script>
 </body>
 </html>
 `;

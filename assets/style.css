@@ -383,7 +383,7 @@ tr.is-open{background:repeating-linear-gradient(-45deg,transparent,transparent 9
   .passage__head{margin-bottom:2pt;gap:.4rem}
   .num{width:1.15rem;height:1.15rem;font-size:6.5pt;border-color:#999;color:#000}
   .passage__label{font-size:8.5pt}
-  .passage__ref{font-size:7.5pt;color:#555}
+  .passage__ref{font-size:7.5pt;color:#555;margin-inline-start:0}
   .passage__lead{display:none}
   .text{gap:2pt}
   .text p{font-size:9.6pt;line-height:1.62;text-align:justify}
@@ -396,7 +396,7 @@ tr.is-open{background:repeating-linear-gradient(-45deg,transparent,transparent 9
   .request .note{display:none}
   .practice p{font-size:8.4pt;line-height:1.45}
   .pull{font-size:8.8pt;line-height:1.5;padding-inline-start:7pt}
-  .foot p+p{display:none}
+  .foot p:nth-of-type(1){display:none}
   p,li{orphans:2;widows:2}
   .nm{color:#000;font-weight:700;text-decoration:underline}
   .foot{margin-top:5pt;padding-block:3pt 0;border-top:.5pt solid #ccc}
@@ -405,53 +405,46 @@ tr.is-open{background:repeating-linear-gradient(-45deg,transparent,transparent 9
   a[href^="http"]::after{content:""}
 }
 
-/* ── שכבת עיון מספריא ────────────────────────────────────────────
-   קיימת רק אם data/commentary.json מלא. סגורה כברירת מחדל, שקטה
-   כשהיא סגורה, ולעולם אינה מודפסת.                                 */
-.expand{margin-top:1.35rem;border-top:1px solid var(--line);padding-top:.85rem}
-.expand summary{display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap;
-  cursor:pointer;list-style:none;font-family:var(--font-ui);
-  padding:.3rem .1rem;border-radius:8px;transition:color .12s ease}
-.expand summary::-webkit-details-marker{display:none}
-.expand__label{display:inline-flex;align-items:center;gap:.38rem;
-  font-size:.84rem;font-weight:600;color:var(--accent)}
-.expand__label::before{content:"";width:.42rem;height:.42rem;flex:none;
-  border-inline-start:1.6px solid currentColor;border-block-end:1.6px solid currentColor;
-  transform:rotate(-45deg) translateY(-.1em);transition:transform .15s ease}
-.expand[open] .expand__label::before{transform:rotate(135deg) translateY(-.15em)}
-.expand__less{display:none}
-.expand[open] .expand__more{display:none}
-.expand[open] .expand__less{display:inline}
-.expand__names{font-size:.78rem;color:var(--ink-3);line-height:1.6}
-.expand[open] .expand__names{opacity:.55}
-.expand summary:hover .expand__label{color:var(--ink)}
+/* ── שכבת עיון מספריא ──────────────────────────────────────────
+   קיימת רק אם data/commentary.json מלא. סגורה כברירת מחדל,
+   נפתחת לקוביה נפרדת, ולעולם אינה מודפסת.                        */
 
-.expand__body{padding-top:.6rem;display:grid;gap:.1rem}
+/* משולש ברירת המחדל של הדפדפן — מוסר בכל הדרכים */
+details > summary{list-style:none}
+details > summary::-webkit-details-marker{display:none}
+details > summary::marker{content:"";font-size:0}
+
+/* חץ משלנו */
+.chev{width:.44rem;height:.44rem;flex:none;
+  border-inline-start:1.7px solid currentColor;border-block-end:1.7px solid currentColor;
+  transform:rotate(-45deg);transition:transform .15s ease}
+
+.expand{margin-top:1.6rem;border-top:1px solid var(--line);padding-top:1rem}
+.expand > summary{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;
+  cursor:pointer;font-family:var(--font-ui);padding:.35rem .1rem;border-radius:8px}
+.expand__label{display:inline-flex;align-items:center;gap:.45rem;
+  font-size:.86rem;font-weight:600;color:var(--accent)}
+.expand[open] .expand__label .chev{transform:rotate(135deg)}
+.expand__names{font-size:.79rem;color:var(--ink-3);line-height:1.65}
+.expand[open] .expand__names{display:none}
+.expand > summary:hover .expand__label{color:var(--ink)}
+
+/* הקוביה שנפתחת */
+.expand__body{margin-top:.9rem;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:14px;
+  padding:.35rem clamp(1rem,3.5vw,1.5rem)}
 
 .voice{border-top:1px solid var(--line)}
 .voice:first-child{border-top:0}
-.voice summary{display:flex;align-items:center;gap:.5rem;cursor:pointer;list-style:none;
-  padding:.62rem .1rem;font-family:var(--font-ui);font-size:.78rem;font-weight:600;
-  letter-spacing:.09em;color:var(--brass);line-height:1;transition:color .12s ease}
-.voice summary::-webkit-details-marker{display:none}
-.voice summary::before{content:"";width:.36rem;height:.36rem;flex:none;
-  border-inline-start:1.5px solid currentColor;border-block-end:1.5px solid currentColor;
-  transform:rotate(-45deg);transition:transform .15s ease;opacity:.75}
-.voice[open] summary::before{transform:rotate(135deg)}
-.voice summary:hover{color:var(--ink)}
-.voice__n{font-weight:500;letter-spacing:0;color:var(--ink-3);font-size:.72rem}
-.voice__body{padding:.1rem 0 .95rem;padding-inline-start:.9rem}
-.voice__t{font-size:.95em;line-height:1.95;color:var(--ink-2)}
-.voice__t+.voice__t{margin-top:.6rem;padding-top:.6rem;border-top:1px dashed var(--line)}
-.voice__src{display:block;margin-top:.4rem;font-family:var(--font-ui);font-size:.72rem;
-  color:var(--ink-3);white-space:nowrap;border-bottom-color:transparent;width:fit-content}
-.voice__src:hover{color:var(--accent);border-bottom-color:currentColor}
-.expand__foot{font-family:var(--font-ui);font-size:.75rem;color:var(--ink-3);
-  border-top:1px solid var(--line);padding-top:.7rem;margin-top:.3rem;line-height:1.6}
-
-/* המקור שבכותרת הקטע פותח את אותה הרחבה */
-.passage__ref[data-ref-for]{cursor:pointer;border-bottom:1px dashed var(--line-2);
-  transition:color .12s ease,border-color .12s ease}
-.passage__ref[data-ref-for]:hover{color:var(--accent);border-bottom-color:currentColor}
+.voice > summary{display:flex;align-items:center;gap:.55rem;cursor:pointer;
+  padding:1rem .1rem;font-family:var(--font-ui);font-size:.82rem;font-weight:600;
+  letter-spacing:.08em;color:var(--brass);line-height:1;transition:color .12s ease}
+.voice[open] > summary{padding-bottom:.55rem}
+.voice[open] > summary .chev{transform:rotate(135deg)}
+.voice > summary:hover{color:var(--ink)}
+.voice__n{font-weight:500;letter-spacing:0;color:var(--ink-3);font-size:.74rem}
+.voice__body{padding-bottom:1.25rem}
+.voice__t{font-size:.95em;line-height:2;color:var(--ink-2)}
+.voice__t+.voice__t{margin-top:.9rem;padding-top:.9rem;border-top:1px dashed var(--line-2)}
 
 @media print{.expand{display:none}}
