@@ -26,16 +26,16 @@ const SOURCES = [
     id: 'chullin',
     refs: [
       { ref: 'Mishnah_Chullin.12.5' },
-      { ref: 'Chullin.142a', locate: 'ומה אם מצוה קלה שהיא כאיסר' }
+      { ref: 'Chullin.142a', anchors: ['מצוה קלה', 'כאיסר', 'למען ייטב לך'] }
     ]
   },
   { id: 'negaim',  refs: [{ ref: 'Mishnah_Negaim.12.5' }] },
-  { id: 'chagiga', refs: [{ ref: 'Chagigah.27a', locate: 'אין אור של גיהנם שולטת בפושעי ישראל' }] },
+  { id: 'chagiga', refs: [{ ref: 'Chagigah.27a', anchors: ['מזבח הזהב', 'פושעי ישראל', 'רקתך'] }] },
   { id: 'pesachim', refs: [
-      { ref: 'Pesachim.87b', locate: 'ומה אתה שאשתך זונה' },
-      { ref: 'Pesachim.87b', locate: 'לך קח לך אשת זנונים' }
+      { ref: 'Pesachim.87b', anchors: ['שאשתך זונה', 'בני בחוני', 'קנינין'] },
+      { ref: 'Pesachim.87b', anchors: ['אשת זנונים', 'דבלים'] }
     ] },
-  { id: 'brachot', refs: [{ ref: 'Berakhot.5a', locate: 'ומה שן ועין שהן אחד מאבריו' }] }
+  { id: 'brachot', refs: [{ ref: 'Berakhot.5a', anchors: ['שן ועין', 'ממרקין', 'תיסרנו'] }] }
 ];
 
 /* מי נכנס, ובאיזה סדר יוצג */
@@ -92,27 +92,49 @@ function versionsOf(payload) {
   }));
 }
 
-/* מאתר את מספר הקטע (1-based) שבו מופיעה מחרוזת האיתור */
-function locateSegment(versions, locate) {
-  const needle = norm(locate);
+/* מאתר את הקטע (1-based) שבו מופיעים הכי הרבה עוגנים. דורש שניים לפחות,
+   או אחד אם זה כל מה שיש — שינוי כתיב אחד לא אמור להפיל את האיתור. */
+function locateSegment(versions, anchors) {
+  const needles = anchors.map(norm);
+  let best = { score: 0, seg: null };
   for (const v of versions) {
-    const i = v.segments.findIndex((seg) => norm(seg).includes(needle));
-    if (i >= 0) return i + 1;
+    v.segments.forEach((seg, i) => {
+      const hay = norm(seg);
+      const score = needles.reduce((a, n) => a + (n && hay.includes(n) ? 1 : 0), 0);
+      if (score > best.score) best = { score, seg: i + 1 };
+    });
   }
-  return null;
+  const need = Math.min(2, needles.length);
+  return best.score >= need ? best.seg : null;
+}
+
+/* v3 לא תמיד מחזיר גרסאות; נופלים ל-v1 שמחזיר he ישירות */
+async function segmentsFor(ref) {
+  const enc = encodeURIComponent(ref);
+  try {
+    const v3 = await getJSON(`${API}/v3/texts/${enc}?version=all`);
+    const vs = versionsOf(v3).filter((v) => v.segments.length);
+    if (vs.length) return vs;
+  } catch (err) { if (VERBOSE) console.log(`      v3 נכשל: ${err.message}`); }
+  const v1 = await getJSON(`${API}/texts/${enc}?context=0&commentary=0&pad=0`);
+  const he = Array.isArray(v1.he) ? v1.he.flat(Infinity) : [v1.he].filter(Boolean);
+  return he.length ? [{ title: v1.heVersionTitle || 'hebrew', lang: 'he', segments: he }] : [];
 }
 
 const sefariaUrl = (ref) => `https://www.sefaria.org/${String(ref).replace(/[ ,]/g, '_')}`;
 
 async function collect(refSpec) {
-  const { ref, locate } = refSpec;
-  const base = await getJSON(`${API}/v3/texts/${encodeURIComponent(ref)}?version=all`);
-  const versions = versionsOf(base);
+  const { ref, anchors } = refSpec;
+  const versions = await segmentsFor(ref);
+  if (VERBOSE) console.log(`      גרסאות: ${versions.map((v) => `${v.title}(${v.segments.length})`).join(', ') || 'אין'}`);
 
   let target = ref;
-  if (locate) {
-    const seg = locateSegment(versions, locate);
-    if (!seg) throw new Error(`לא אותר הקטע "${locate.slice(0, 24)}…" בתוך ${ref}`);
+  if (anchors) {
+    const seg = locateSegment(versions, anchors);
+    if (!seg) {
+      const sample = versions[0]?.segments.slice(0, 3).map((x) => norm(x).slice(0, 70)).join(' ⏐ ') || '—';
+      throw new Error(`לא אותר [${anchors.join(', ')}] בתוך ${ref}. דוגמית: ${sample}`);
+    }
     target = `${ref}.${seg}`;
     if (VERBOSE) console.log(`      אותר קטע ${seg}`);
   }
@@ -122,8 +144,8 @@ async function collect(refSpec) {
   /* ביאור שטיינזלץ — גרסה של הטקסט עצמו, לא קישור */
   const stein = versions.find((v) => /steinsaltz|שטיינזלץ/i.test(v.title));
   if (stein) {
-    const segIdx = locate ? Number(target.split('.').pop()) - 1 : 0;
-    const txt = clean(stein.segments[segIdx] || (locate ? '' : stein.segments.join(' ')));
+    const segIdx = anchors ? Number(target.split('.').pop()) - 1 : 0;
+    const txt = clean(stein.segments[segIdx] || (anchors ? '' : stein.segments.join(' ')));
     if (txt.length > 12) out.steinsaltz = { he: 'ביאור שטיינזלץ', items: [{ ref: target, url: sefariaUrl(target), text: txt }] };
   }
 
@@ -165,7 +187,7 @@ for (const src of SOURCES) {
   const merged = {};
   for (const refSpec of src.refs) {
     try {
-      if (VERBOSE) console.log(`   ${refSpec.ref}${refSpec.locate ? ' + איתור' : ''}`);
+      if (VERBOSE) console.log(`   ${refSpec.ref}${refSpec.anchors ? ' + איתור' : ''}`);
       mergeInto(merged, await collect(refSpec));
       await sleep(400);                                  /* עדינות כלפי ספריא */
     } catch (err) {

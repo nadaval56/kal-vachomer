@@ -64,11 +64,11 @@ ${body}
 
 function topbar({ base = '', here }) {
   const other = here === 'pray'
-    ? `<a class="btn btn--ghost" href="${base}study/">להבין</a>`
+    ? ''                                   /* הקישור למצב הלימוד מוסתר לעת עתה */
     : `<a class="btn btn--ghost" href="${base}">להתפלל</a>`;
   return `<header class="topbar no-print">
   <div class="wrap topbar__in">
-    <a class="brand" href="${base}">סגולת הקל וחומר<span> · ${here === 'pray' ? 'להתפלל' : 'להבין'}</span></a>
+    <a class="brand" href="${base}">סגולת הקל וחומר${here === 'pray' ? '' : '<span> · להבין</span>'}</a>
     <div class="topbar__sp"></div>
     <div class="tools">
       ${here === 'pray' ? `<button class="btn" type="button" data-print title="הדפסה">${ico.print}<span class="sr">הדפסה</span></button>` : ''}
@@ -113,24 +113,12 @@ ${topbar({ here: 'pray' })}
   <div class="wrap">
 
     <section class="hero">
+      <p class="hero__kicker">${esc(t.meta.source)}</p>
       <h1>${esc(t.meta.title)}</h1>
       <p class="hero__sub">${esc(t.meta.subtitle)}</p>
       <div class="hero__rule"></div>
       <div class="lede">
 ${join(t.intro.lines, (l) => `        <p>${html(l)}</p>`)}
-      </div>
-      <p style="margin-top:1.8rem" class="no-print">
-        <a class="bridge" href="study/">${ico.arrow}${esc(t.intro.deepLink)}</a>
-      </p>
-    </section>
-
-    <section class="section" aria-labelledby="practice-h">
-      <div class="card practice">
-        <h3 id="practice-h">${esc(t.practice.title)}</h3>
-${join(t.practice.lines, (l) => `        <p>${html(l)}</p>`)}
-        <blockquote class="pull">${html(t.practice.quote)}
-          <small>${esc(t.practice.quoteNote)}</small>
-        </blockquote>
       </div>
     </section>
 
@@ -181,11 +169,7 @@ ${reqVariant('female')}
 
   <footer class="foot">
     <div class="wrap">
-      <div class="foot__nav no-print">
-        <a href="study/">${esc(t.intro.deepLink)}</a>
-      </div>
 ${join(t.footer.lines, (l) => `      <p>${html(l)}</p>`)}
-      <p style="margin-top:.9rem">${esc(t.meta.textStatus.note)}</p>
     </div>
   </footer>
 </main>`;
