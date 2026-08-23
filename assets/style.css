@@ -405,15 +405,42 @@ tr.is-open{background:repeating-linear-gradient(-45deg,transparent,transparent 9
   a[href^="http"]::after{content:""}
 }
 
-/* ── שכבת עיון מספריא (נטענת רק אם commentary.json מלא) ────────── */
-.comm{margin-top:1.1rem;border-top:1px solid var(--line);padding-top:.9rem}
-.comm summary{font-family:var(--font-ui);font-size:.83rem;font-weight:500;color:var(--accent);
-  cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.4rem}
-.comm summary::-webkit-details-marker{display:none}
-.comm summary::before{content:"+";font-size:.95rem;line-height:1;color:var(--ink-3)}
-.comm[open] summary::before{content:"−"}
-.comm__g{margin-top:.9rem}
-.comm__name{font-family:var(--font-ui);font-size:.74rem;font-weight:600;letter-spacing:.1em;color:var(--brass)}
-.comm__t{font-size:.98em;line-height:1.9;color:var(--ink-2);margin-top:.45rem}
-.comm__t a{font-family:var(--font-ui);font-size:.75rem;color:var(--ink-3);white-space:nowrap}
-@media print{.comm{display:none}}
+/* ── שכבת עיון מספריא ────────────────────────────────────────────
+   קיימת רק אם data/commentary.json מלא. סגורה כברירת מחדל, שקטה
+   כשהיא סגורה, ולעולם אינה מודפסת.                                 */
+.expand{margin-top:1.35rem;border-top:1px solid var(--line);padding-top:.85rem}
+.expand summary{display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap;
+  cursor:pointer;list-style:none;font-family:var(--font-ui);
+  padding:.3rem .1rem;border-radius:8px;transition:color .12s ease}
+.expand summary::-webkit-details-marker{display:none}
+.expand__label{display:inline-flex;align-items:center;gap:.38rem;
+  font-size:.84rem;font-weight:600;color:var(--accent)}
+.expand__label::before{content:"";width:.42rem;height:.42rem;flex:none;
+  border-inline-start:1.6px solid currentColor;border-block-end:1.6px solid currentColor;
+  transform:rotate(-45deg) translateY(-.1em);transition:transform .15s ease}
+.expand[open] .expand__label::before{transform:rotate(135deg) translateY(-.15em)}
+.expand__less{display:none}
+.expand[open] .expand__more{display:none}
+.expand[open] .expand__less{display:inline}
+.expand__names{font-size:.78rem;color:var(--ink-3);line-height:1.6}
+.expand[open] .expand__names{opacity:.55}
+.expand summary:hover .expand__label{color:var(--ink)}
+
+.expand__body{padding-top:.5rem;display:grid;gap:1.35rem}
+.voice{display:grid;gap:.5rem}
+.voice__name{font-family:var(--font-ui);font-size:.72rem;font-weight:600;
+  letter-spacing:.12em;color:var(--brass);line-height:1}
+.voice__t{font-size:.95em;line-height:1.95;color:var(--ink-2)}
+.voice__t+.voice__t{margin-top:.55rem;padding-top:.55rem;border-top:1px dashed var(--line)}
+.voice__src{font-family:var(--font-ui);font-size:.72rem;color:var(--ink-3);
+  white-space:nowrap;border-bottom-color:transparent}
+.voice__src:hover{color:var(--accent);border-bottom-color:currentColor}
+.expand__foot{font-family:var(--font-ui);font-size:.75rem;color:var(--ink-3);
+  border-top:1px solid var(--line);padding-top:.7rem;line-height:1.6}
+
+/* המקור שבכותרת הקטע פותח את אותה הרחבה */
+.passage__ref[data-ref-for]{cursor:pointer;border-bottom:1px dashed var(--line-2);
+  transition:color .12s ease,border-color .12s ease}
+.passage__ref[data-ref-for]:hover{color:var(--accent);border-bottom-color:currentColor}
+
+@media print{.expand{display:none}}

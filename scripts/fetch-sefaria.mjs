@@ -40,14 +40,14 @@ const SOURCES = [
 
 /* מי נכנס, ובאיזה סדר יוצג */
 const VOICES = [
-  { key: 'psukim',    he: 'הפסוקים',          order: 1, category: 'Tanakh' },
-  { key: 'steinsaltz', he: 'ביאור שטיינזלץ',   order: 2, title: /steinsaltz|שטיינזלץ/i },
-  { key: 'rashi',     he: 'רש״י',              order: 3, title: /^rashi on |^רש"י על/i },
-  { key: 'bartenura', he: 'ברטנורא',           order: 4, title: /^bartenura on /i },
-  { key: 'tosafot_yt', he: 'תוספות יום טוב',   order: 5, title: /^tosafot yom tov on /i },
-  { key: 'rambam_m',  he: 'רמב״ם על המשנה',    order: 6, title: /^rambam on mishnah /i },
-  { key: 'tosafot',   he: 'תוספות',            order: 7, title: /^tosafot on /i },
-  { key: 'maharsha',  he: 'מהרש״א',            order: 8, title: /^chidushei (agadot|halachot) on |maharsha/i }
+  { key: 'steinsaltz', he: 'ביאור שטיינזלץ',  max: 1, title: /steinsaltz|שטיינזלץ/i },
+  { key: 'psukim',    he: 'הפסוקים',          max: 2, category: 'Tanakh' },
+  { key: 'rashi',     he: 'רש״י',             max: 3, title: /^rashi on |^רש"י על/i },
+  { key: 'bartenura', he: 'ברטנורא',          max: 3, title: /^bartenura on /i },
+  { key: 'tosafot_yt', he: 'תוספות יום טוב',  max: 3, title: /^tosafot yom tov on /i },
+  { key: 'rambam_m',  he: 'רמב״ם על המשנה',   max: 2, title: /^rambam on mishnah /i },
+  { key: 'tosafot',   he: 'תוספות',           max: 2, title: /^tosafot on /i },
+  { key: 'maharsha',  he: 'מהרש״א',           max: 2, title: /^chidushei (agadot|halachot) on |maharsha/i }
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -150,7 +150,7 @@ async function collect(refSpec) {
   if (stein) {
     const segIdx = anchors ? Number(target.split('.').pop()) - 1 : 0;
     const txt = clean(stein.segments[segIdx] || (anchors ? '' : stein.segments.join(' ')));
-    if (txt.length > 12) out.steinsaltz = { he: 'ביאור שטיינזלץ', items: [{ ref: target, url: sefariaUrl(target), text: txt }] };
+    if (txt.length > 12) out.steinsaltz = { he: 'ביאור שטיינזלץ', items: [{ ref: target, heRef: null, url: sefariaUrl(target), text: txt }] };
   }
 
   const links = await getJSON(`${API}/links/${encodeURIComponent(target)}?with_text=1`);
@@ -165,7 +165,7 @@ async function collect(refSpec) {
     if (text.length < 8) continue;
     (out[voice.key] ||= { he: voice.he, items: [] });
     if (out[voice.key].items.some((i) => i.ref === link.ref)) continue;
-    out[voice.key].items.push({ ref: link.ref, url: sefariaUrl(link.ref), text });
+    out[voice.key].items.push({ ref: link.ref, heRef: link.heRef || null, url: sefariaUrl(link.ref), text });
   }
   return out;
 }
@@ -202,7 +202,7 @@ for (const src of SOURCES) {
   const ordered = {};
   for (const v of VOICES) {
     if (!merged[v.key]?.items.length) continue;
-    ordered[v.key] = { he: merged[v.key].he, items: merged[v.key].items.slice(0, 6) };
+    ordered[v.key] = { he: merged[v.key].he, items: merged[v.key].items.slice(0, v.max || 2) };
   }
   const n = Object.values(ordered).reduce((a, g) => a + g.items.length, 0);
   if (n) { result.passages[src.id] = ordered; ok++; }
