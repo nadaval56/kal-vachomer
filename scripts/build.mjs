@@ -25,6 +25,33 @@ const ico = {
   arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>'
 };
 
+/* ── שכבת עיון מספריא ──────────────────────────────────────────
+   נטענת רק אם data/commentary.json מלא. בלעדיה הקטע פשוט לא מופיע. */
+const voices = (id) => {
+  const g = commentary.passages && commentary.passages[id];
+  return g ? Object.values(g).filter((v) => v.items && v.items.length) : [];
+};
+
+const voiceBlocks = (list) => join(list, (g) => `            <section class="voice">
+            <h4 class="voice__name">${esc(g.he)}</h4>
+${join(g.items, (i) => `              <p class="voice__t">${esc(i.text)} <a class="voice__src" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">${esc(i.ref)} ↗</a></p>`)}
+          </section>`);
+
+const expandFor = (id) => {
+  const list = voices(id);
+  if (!list.length) return '';
+  return `        <details class="expand no-print" id="x-${esc(id)}">
+        <summary>
+          <span class="expand__label"><span class="expand__more">להרחיב</span><span class="expand__less">לצמצם</span></span>
+          <span class="expand__names">${list.map((g) => esc(g.he)).join(' · ')}</span>
+        </summary>
+        <div class="expand__body">
+${voiceBlocks(list)}
+          <p class="expand__foot">מספריא. הטקסט שלמעלה הוא נוסח ״לשון חכמים״ ואינו מוחלף.</p>
+        </div>
+      </details>`;
+};
+
 /* ── shell ─────────────────────────────────────────────────────── */
 function page({ title, desc, base = '', bodyClass = '', body }) {
   return `<!doctype html>
@@ -93,12 +120,13 @@ function renderPray() {
         <div class="passage__head">
           <span class="num" aria-hidden="true">${p.n}</span>
           <h3 class="passage__label">${esc(p.label)}</h3>
-          <span class="passage__ref">${esc(p.ref)}</span>
+          <span class="passage__ref" data-ref-for="${esc(p.id)}">${esc(p.ref)}</span>
         </div>
         <p class="passage__lead">${esc(p.lead)}</p>
         <div class="text">
 ${join(p.lines, (l) => `          <p>${html(l)}</p>`)}
         </div>
+${expandFor(p.id)}
       </article>`);
 
   const reqVariant = (key) => `
@@ -187,20 +215,6 @@ function renderStudy() {
   const s = study;
 
 
-  /* שכבת עיון מספריא — מוצגת רק אם data/commentary.json מלא */
-  const commentaryFor = (ref) => {
-    const entry = commentary.refs && commentary.refs[ref];
-    const groups = entry && entry.comments ? Object.values(entry.comments).filter((g) => g.items && g.items.length) : [];
-    if (!groups.length) return '';
-    return `        <details class="comm">
-          <summary>פירושים מספריא</summary>
-${join(groups, (g) => `          <div class="comm__g">
-            <p class="comm__name">${esc(g.he)}</p>
-${join(g.items, (i) => `            <p class="comm__t">${esc(i.text)} <a href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">${esc(i.ref)} ↗</a></p>`)}
-          </div>`)}
-        </details>`;
-  };
-
   const step = (st) => `
       <div class="step">
         <span class="step__dot" aria-hidden="true">${st.n}</span>
@@ -245,7 +259,7 @@ ${join(it.rungs, (r) => `          <div class="rung">
         ${it.lead ? `<p class="bd__lead">${html(it.lead)}</p>` : ''}
 ${it.isLadder ? ladder(it) : slots(it)}
         ${it.extra ? `<p class="bd__extra">${html(it.extra)}</p>` : ''}
-${commentaryFor(it.sefaria)}
+${expandFor(it.id)}
       </article>`);
 
   const rows = join(middot.rows, (r) => {
