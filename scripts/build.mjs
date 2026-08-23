@@ -310,6 +310,7 @@ ${join(idea.list, (x, i) => `              <li${i < 3 ? ' class="is-paired"' : '
   /* ── ג ── */
   const demo = s.demo;
   const partC = part({ n: demo.n, title: demo.title, lead: demo.lead, body: [
+    prose(demo.intro),
     quote(demo.gemara, demo.gemaraSource),
     prose(demo.explain),
     quote(demo.core, demo.source)
@@ -354,7 +355,7 @@ ${join(texts.footer.lines, (l) => `      <p>${html(l)}</p>`)}
 
   return page({
     title: `העמקה - ${texts.meta.titlePlain}`,
-    desc: 'שתי ההנחיות של מרן הבן איש חי, הרעיון שמאחורי הסדר לפי הבני יששכר בשם המגיד ממעזריטש, העדות שבספר בן יהוידע, וההשמטה.',
+    desc: 'שתי ההנחיות של מרן הבן איש חי, הרעיון שמאחורי הסדר לפי הבני יששכר בשם המגיד ממעזריטש, הגילוי שבספר בן יהוידע, וההשמטה.',
     base: '../',
     body
   });
