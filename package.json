@@ -1,0 +1,13 @@
+{
+  "name": "kal-vachomer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "סגולת הקל וחומר — אתר סטטי סביב סגולת רפואת החולה של הבן איש חי",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "sefaria": "node scripts/fetch-sefaria.mjs",
+    "serve": "node --run build && python3 -m http.server 8080"
+  },
+  "license": "CC-BY-4.0"
+}
