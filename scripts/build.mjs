@@ -305,7 +305,7 @@ ${join(idea.list, (x, i) => `              <li${i < 3 ? ' class="is-paired"' : '
   /* ── ג ── */
   const demo = s.demo;
   const partC = part({ n: demo.n, title: demo.title, lead: demo.lead, body: [
-    quote([demo.gemara], demo.gemaraSource),
+    quote(demo.gemara, demo.gemaraSource),
     prose(demo.explain),
     quote(demo.core, demo.source),
     more(demo.fullTitle, demo.full)
