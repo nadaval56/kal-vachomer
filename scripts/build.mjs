@@ -43,8 +43,8 @@ function page({ title, desc, base = '', bodyClass = '', body }) {
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:locale" content="he_IL">
 <link rel="stylesheet" href="${base}assets/style.css">
-<link rel="preload" as="font" type="font/woff2" href="${base}assets/fonts/frank-ruhl-libre-hebrew-400-normal.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="${base}assets/fonts/assistant-hebrew-400-normal.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="${base}assets/fonts/assistant-hebrew-600-normal.woff2" crossorigin>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233B6675'/%3E%3Cpath d='M11 22V10m0 6h10m0-6v12' stroke='%23FAF9F6' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
 <script>
 /* מונע הבזק לבן במצב לילה ומחיל את מדרגת הגופן לפני הציור הראשון */
@@ -113,7 +113,6 @@ ${topbar({ here: 'pray' })}
   <div class="wrap">
 
     <section class="hero">
-      <p class="hero__kicker">${esc(t.meta.source)}</p>
       <h1>${esc(t.meta.title)}</h1>
       <p class="hero__sub">${esc(t.meta.subtitle)}</p>
       <div class="hero__rule"></div>
@@ -152,7 +151,7 @@ ${join(t.practice.lines, (l) => `        <p>${html(l)}</p>`)}
         </div>
         <div class="namebox__row">
           <div class="field">
-            <span class="field-label" style="font-family:var(--font-ui);font-size:.8rem;font-weight:500;color:var(--ink-2)" id="gender-h">${esc(t.namePrompt.genderLabel)}</span>
+            <span class="sr" id="gender-h">${esc(t.namePrompt.genderLabel)}</span>
             <div class="seg" role="group" aria-labelledby="gender-h">
               <button type="button" data-gender="male" aria-pressed="true">${esc(t.namePrompt.genderMale)}</button>
               <button type="button" data-gender="female" aria-pressed="false">${esc(t.namePrompt.genderFemale)}</button>

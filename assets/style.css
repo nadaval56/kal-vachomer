@@ -1,28 +1,9 @@
 @charset "utf-8";
 
 /* ── fonts ─────────────────────────────────────────────────────────────
-   Frank Ruhl Libre — דברי חכמים (אותה משפחה של פרנק־רוהל)
-   Noto Serif Hebrew — פסוקים, משום הטעמים
-   Assistant        — ממשק
+   Assistant — כל האתר. הגופן היחיד. יש בו את כל סימני הניקוד
+   ומיקום GPOS נכון. טעמי מקרא הוסרו מן הטקסט, ולכן אין בהם צורך.
    ───────────────────────────────────────────────────────────────────── */
-@font-face{font-family:'Frank Ruhl Libre';font-style:normal;font-weight:400;font-display:swap;
-  src:url(fonts/frank-ruhl-libre-hebrew-400-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-@font-face{font-family:'Frank Ruhl Libre';font-style:normal;font-weight:400;font-display:swap;
-  src:url(fonts/frank-ruhl-libre-latin-400-normal.woff2) format('woff2')}
-@font-face{font-family:'Frank Ruhl Libre';font-style:normal;font-weight:500;font-display:swap;
-  src:url(fonts/frank-ruhl-libre-hebrew-500-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-@font-face{font-family:'Frank Ruhl Libre';font-style:normal;font-weight:500;font-display:swap;
-  src:url(fonts/frank-ruhl-libre-latin-500-normal.woff2) format('woff2')}
-@font-face{font-family:'Frank Ruhl Libre';font-style:normal;font-weight:700;font-display:swap;
-  src:url(fonts/frank-ruhl-libre-hebrew-700-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-@font-face{font-family:'Frank Ruhl Libre';font-style:normal;font-weight:700;font-display:swap;
-  src:url(fonts/frank-ruhl-libre-latin-700-normal.woff2) format('woff2')}
-
-@font-face{font-family:'Noto Serif Hebrew';font-style:normal;font-weight:400;font-display:swap;
-  src:url(fonts/noto-serif-hebrew-hebrew-400-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-@font-face{font-family:'Noto Serif Hebrew';font-style:normal;font-weight:500;font-display:swap;
-  src:url(fonts/noto-serif-hebrew-hebrew-500-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-
 @font-face{font-family:'Assistant';font-style:normal;font-weight:400;font-display:swap;
   src:url(fonts/assistant-hebrew-400-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
 @font-face{font-family:'Assistant';font-style:normal;font-weight:400;font-display:swap;
@@ -35,12 +16,16 @@
   src:url(fonts/assistant-hebrew-600-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
 @font-face{font-family:'Assistant';font-style:normal;font-weight:600;font-display:swap;
   src:url(fonts/assistant-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Assistant';font-style:normal;font-weight:700;font-display:swap;
+  src:url(fonts/assistant-hebrew-700-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:'Assistant';font-style:normal;font-weight:700;font-display:swap;
+  src:url(fonts/assistant-latin-700-normal.woff2) format('woff2')}
 
 /* ── tokens ───────────────────────────────────────────────────────── */
 :root{
-  --font-text:'Frank Ruhl Libre',"Taamey Frank CLM","Keter YG",'Noto Serif Hebrew',David,serif;
-  --font-verse:'Noto Serif Hebrew',"Taamey Frank CLM",'Frank Ruhl Libre',serif;
-  --font-ui:'Assistant',system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-text:'Assistant',system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-verse:var(--font-text);
+  --font-ui:var(--font-text);
 
   --paper:#FAF9F6;   --surface:#FFFFFF;  --surface-2:#F4F2EC;
   --ink:#16181B;     --ink-2:#4B515A;    --ink-3:#878E98;
@@ -51,7 +36,7 @@
 
   --fs:19px;          /* מדרגת גופן — נשלטת מ־data-size */
   --measure:34rem;
-  --lh:2.0;
+  --lh:1.95;
   --radius:16px;
 }
 html[data-size="1"]{--fs:17.5px;--measure:33rem}
@@ -144,7 +129,7 @@ strong{font-weight:700}
 .hero{padding-block:clamp(3rem,9vw,5.5rem) clamp(1.5rem,4vw,2.5rem)}
 .hero__kicker{font-family:var(--font-ui);font-size:.74rem;font-weight:600;letter-spacing:.14em;
   color:var(--brass);text-transform:none;line-height:1;margin-bottom:1.15rem}
-.hero h1{font-size:clamp(2.1rem,7.5vw,3.1rem);line-height:1.22;letter-spacing:-.01em;font-weight:500}
+.hero h1{font-size:clamp(2rem,7vw,2.9rem);line-height:1.28;letter-spacing:-.022em;font-weight:600}
 .hero__sub{font-family:var(--font-ui);color:var(--ink-2);font-size:.95rem;line-height:1.6;margin-top:.85rem}
 .hero__rule{height:1px;background:linear-gradient(to left,var(--line-2),transparent);margin-top:2.2rem}
 
@@ -211,11 +196,11 @@ section{scroll-margin-top:70px}
   margin:-.55rem 0 1.25rem;padding-inline-start:2.4rem}
 @media (max-width:520px){.passage__lead{padding-inline-start:0}.passage__ref{margin-inline-start:0;width:100%}}
 .text{display:grid;gap:.95em}
-.text p{font-size:1.06em;line-height:var(--lh);text-align:start;hanging-punctuation:allow-end}
+.text p{font-size:1.03em;line-height:var(--lh);text-align:start;hanging-punctuation:allow-end}
 
 /* הדגשות עדינות: צבע בלבד — כל רקע או קו תחתון היה מתנגש בניקוד */
 .kv{color:var(--accent);font-weight:500}
-.q{font-family:var(--font-verse);font-weight:500;color:var(--brass);font-size:.97em}
+.q{font-weight:600;color:var(--brass)}
 :root[data-theme="night"] .q{font-weight:400}
 @media (prefers-color-scheme:dark){:root:not([data-theme="day"]) .q{font-weight:400}}
 .verse-lead{display:block;text-align:center;font-size:1.18em;margin-block:.35em;line-height:1.9}
@@ -257,7 +242,7 @@ section{scroll-margin-top:70px}
 .toc a:hover{background:var(--surface-2);color:var(--ink)}
 .toc a[aria-current]{color:var(--accent);background:var(--accent-wash)}
 
-.h2{font-size:clamp(1.5rem,4.5vw,2rem);font-weight:500;letter-spacing:-.005em;line-height:1.3}
+.h2{font-size:clamp(1.45rem,4.2vw,1.9rem);font-weight:600;letter-spacing:-.018em;line-height:1.32}
 .section__lead{font-family:var(--font-ui);color:var(--ink-2);font-size:.97rem;line-height:1.75;
   margin-top:.9rem;max-width:var(--measure)}
 
