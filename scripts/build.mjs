@@ -48,10 +48,15 @@ const voices = (id) => {
   return g ? Object.values(g).filter((v) => v.items && v.items.length) : [];
 };
 
+/* כותרת המשנה אומרת מי; השורה שמתחתיה אומרת מאיפה. */
 const voiceBlock = (g, i) => `            <details class="voice"${i === 0 ? ' open' : ''}>
               <summary>${CHEV}<span>${esc(g.he)}</span>${g.items.length > 1 ? `<span class="voice__n">${g.items.length}</span>` : ''}</summary>
               <div class="voice__body">
-${join(g.items, (it) => `                <p class="voice__t">${esc(it.text)}</p>`)}
+${join(g.items, (it, n) => {
+  /* ציון חוזר על עצמו הוא רעש: מוצג רק כשהוא משתנה */
+  const show = it.loc && it.loc !== g.items[n - 1]?.loc;
+  return `                <div class="cite">${show ? `<p class="cite__loc">${esc(it.loc)}</p>` : ''}<p class="voice__t">${esc(it.text)}</p></div>`;
+})}
               </div>
             </details>`;
 
