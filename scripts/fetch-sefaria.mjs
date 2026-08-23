@@ -134,6 +134,9 @@ function refParts(ref) {
 const hebrewRef = (r) => refParts(r)?.he || null;
 const hebrewLoc = (r) => refParts(r)?.loc || null;
 
+/* מקורות שאינם חלק מהאיסוף, אבל שימושי לסקור אותם (--probe) */
+const PROBE_EXTRA = ['Gittin.16a'];
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const norm = (s) => String(s)
   .replace(/<[^>]+>/g, ' ')
@@ -302,7 +305,9 @@ function mergeInto(dst, src) {
 
 if (PROBE) {
   const seen = new Set();
-  for (const src of SOURCES) {
+  const all = [...SOURCES.flatMap((x) => x.refs.map((r) => ({ ref: r.ref }))),
+               ...PROBE_EXTRA.map((ref) => ({ ref }))];
+  for (const src of [{ refs: all }]) {
     for (const { ref } of src.refs) {
       if (seen.has(ref)) continue;
       seen.add(ref);
