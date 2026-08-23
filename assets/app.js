@@ -129,6 +129,27 @@
     render();
   }
 
+  /* ── המקור שבכותרת הקטע פותח את שכבת העיון ────────────────────── */
+  Array.prototype.slice.call(document.querySelectorAll('[data-ref-for]')).forEach(function (ref) {
+    var box = document.getElementById('x-' + ref.getAttribute('data-ref-for'));
+    if (!box) return;
+    ref.setAttribute('role', 'button');
+    ref.setAttribute('tabindex', '0');
+    ref.setAttribute('aria-controls', box.id);
+    var sync = function () { ref.setAttribute('aria-expanded', String(box.open)); };
+    var toggle = function () {
+      box.open = !box.open;
+      sync();
+      if (box.open) box.scrollIntoView({ block: 'nearest' });
+    };
+    ref.addEventListener('click', toggle);
+    ref.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
+    box.addEventListener('toggle', sync);
+    sync();
+  });
+
   /* ── תוכן עניינים בעמוד הלימוד: סימון החלק הנוכחי ─────────────── */
   var tocLinks = Array.prototype.slice.call(document.querySelectorAll('.toc a[href^="#"]'));
   if (tocLinks.length && 'IntersectionObserver' in window) {

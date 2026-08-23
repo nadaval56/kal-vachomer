@@ -25,6 +25,37 @@ const ico = {
   arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>'
 };
 
+/* ── שכבת עיון מספריא ──────────────────────────────────────────
+   נטענת רק אם data/commentary.json מלא. בלעדיה הקטע פשוט לא מופיע.
+   כל מפרש נפתח בנפרד, כדי שההרחבה לא תהיה קיר של טקסט.
+   הראשון (ביאור שטיינזלץ) פתוח — הוא ההסבר הפשוט.               */
+const voices = (id) => {
+  const g = commentary.passages && commentary.passages[id];
+  return g ? Object.values(g).filter((v) => v.items && v.items.length) : [];
+};
+
+const voiceBlock = (g, i) => `            <details class="voice"${i === 0 ? ' open' : ''}>
+              <summary class="voice__name">${esc(g.he)}${g.items.length > 1 ? `<span class="voice__n">${g.items.length}</span>` : ''}</summary>
+              <div class="voice__body">
+${join(g.items, (it) => `                <p class="voice__t">${esc(it.text)} <a class="voice__src" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer">${esc(it.heRef || it.ref)} ↗</a></p>`)}
+              </div>
+            </details>`;
+
+const expandFor = (id) => {
+  const list = voices(id);
+  if (!list.length) return '';
+  return `        <details class="expand no-print" id="x-${esc(id)}">
+          <summary>
+            <span class="expand__label"><span class="expand__more">להרחיב</span><span class="expand__less">לצמצם</span></span>
+            <span class="expand__names">${list.map((g) => esc(g.he)).join(' · ')}</span>
+          </summary>
+          <div class="expand__body">
+${list.map(voiceBlock).join('\n')}
+            <p class="expand__foot">מספריא. הטקסט שלמעלה הוא נוסח ״לשון חכמים״ ואינו מוחלף.</p>
+          </div>
+        </details>`;
+};
+
 /* ── shell ─────────────────────────────────────────────────────── */
 function page({ title, desc, base = '', bodyClass = '', body }) {
   return `<!doctype html>
@@ -64,11 +95,11 @@ ${body}
 
 function topbar({ base = '', here }) {
   const other = here === 'pray'
-    ? `<a class="btn btn--ghost" href="${base}study/">להבין</a>`
+    ? ''                                   /* הקישור למצב הלימוד מוסתר לעת עתה */
     : `<a class="btn btn--ghost" href="${base}">להתפלל</a>`;
   return `<header class="topbar no-print">
   <div class="wrap topbar__in">
-    <a class="brand" href="${base}">סגולת הקל וחומר<span> · ${here === 'pray' ? 'להתפלל' : 'להבין'}</span></a>
+    <a class="brand" href="${base}">סגולת הקל וחומר${here === 'pray' ? '' : '<span> · להבין</span>'}</a>
     <div class="topbar__sp"></div>
     <div class="tools">
       ${here === 'pray' ? `<button class="btn" type="button" data-print title="הדפסה">${ico.print}<span class="sr">הדפסה</span></button>` : ''}
@@ -93,12 +124,13 @@ function renderPray() {
         <div class="passage__head">
           <span class="num" aria-hidden="true">${p.n}</span>
           <h3 class="passage__label">${esc(p.label)}</h3>
-          <span class="passage__ref">${esc(p.ref)}</span>
+          <span class="passage__ref" data-ref-for="${esc(p.id)}">${esc(p.ref)}</span>
         </div>
         <p class="passage__lead">${esc(p.lead)}</p>
         <div class="text">
 ${join(p.lines, (l) => `          <p>${html(l)}</p>`)}
         </div>
+${expandFor(p.id)}
       </article>`);
 
   const reqVariant = (key) => `
@@ -113,24 +145,12 @@ ${topbar({ here: 'pray' })}
   <div class="wrap">
 
     <section class="hero">
+      <p class="hero__kicker">${esc(t.meta.source)}</p>
       <h1>${esc(t.meta.title)}</h1>
       <p class="hero__sub">${esc(t.meta.subtitle)}</p>
       <div class="hero__rule"></div>
       <div class="lede">
 ${join(t.intro.lines, (l) => `        <p>${html(l)}</p>`)}
-      </div>
-      <p style="margin-top:1.8rem" class="no-print">
-        <a class="bridge" href="study/">${ico.arrow}${esc(t.intro.deepLink)}</a>
-      </p>
-    </section>
-
-    <section class="section" aria-labelledby="practice-h">
-      <div class="card practice">
-        <h3 id="practice-h">${esc(t.practice.title)}</h3>
-${join(t.practice.lines, (l) => `        <p>${html(l)}</p>`)}
-        <blockquote class="pull">${html(t.practice.quote)}
-          <small>${esc(t.practice.quoteNote)}</small>
-        </blockquote>
       </div>
     </section>
 
@@ -181,11 +201,7 @@ ${reqVariant('female')}
 
   <footer class="foot">
     <div class="wrap">
-      <div class="foot__nav no-print">
-        <a href="study/">${esc(t.intro.deepLink)}</a>
-      </div>
 ${join(t.footer.lines, (l) => `      <p>${html(l)}</p>`)}
-      <p style="margin-top:.9rem">${esc(t.meta.textStatus.note)}</p>
     </div>
   </footer>
 </main>`;
@@ -202,20 +218,6 @@ ${join(t.footer.lines, (l) => `      <p>${html(l)}</p>`)}
 function renderStudy() {
   const s = study;
 
-
-  /* שכבת עיון מספריא — מוצגת רק אם data/commentary.json מלא */
-  const commentaryFor = (ref) => {
-    const entry = commentary.refs && commentary.refs[ref];
-    const groups = entry && entry.comments ? Object.values(entry.comments).filter((g) => g.items && g.items.length) : [];
-    if (!groups.length) return '';
-    return `        <details class="comm">
-          <summary>פירושים מספריא</summary>
-${join(groups, (g) => `          <div class="comm__g">
-            <p class="comm__name">${esc(g.he)}</p>
-${join(g.items, (i) => `            <p class="comm__t">${esc(i.text)} <a href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">${esc(i.ref)} ↗</a></p>`)}
-          </div>`)}
-        </details>`;
-  };
 
   const step = (st) => `
       <div class="step">
@@ -261,7 +263,7 @@ ${join(it.rungs, (r) => `          <div class="rung">
         ${it.lead ? `<p class="bd__lead">${html(it.lead)}</p>` : ''}
 ${it.isLadder ? ladder(it) : slots(it)}
         ${it.extra ? `<p class="bd__extra">${html(it.extra)}</p>` : ''}
-${commentaryFor(it.sefaria)}
+${expandFor(it.id)}
       </article>`);
 
   const rows = join(middot.rows, (r) => {

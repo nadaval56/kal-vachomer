@@ -18,7 +18,7 @@ jobs:
           node-version: 22
 
       - name: fetch from sefaria
-        run: node scripts/fetch-sefaria.mjs
+        run: node scripts/fetch-sefaria.mjs --verbose
 
       - name: rebuild pages
         run: node scripts/build.mjs
