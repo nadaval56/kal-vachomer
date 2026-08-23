@@ -26,30 +26,34 @@ const ico = {
 };
 
 /* ── שכבת עיון מספריא ──────────────────────────────────────────
-   נטענת רק אם data/commentary.json מלא. בלעדיה הקטע פשוט לא מופיע. */
+   נטענת רק אם data/commentary.json מלא. בלעדיה הקטע פשוט לא מופיע.
+   כל מפרש נפתח בנפרד, כדי שההרחבה לא תהיה קיר של טקסט.
+   הראשון (ביאור שטיינזלץ) פתוח — הוא ההסבר הפשוט.               */
 const voices = (id) => {
   const g = commentary.passages && commentary.passages[id];
   return g ? Object.values(g).filter((v) => v.items && v.items.length) : [];
 };
 
-const voiceBlocks = (list) => join(list, (g) => `            <section class="voice">
-            <h4 class="voice__name">${esc(g.he)}</h4>
-${join(g.items, (i) => `              <p class="voice__t">${esc(i.text)} <a class="voice__src" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">${esc(i.ref)} ↗</a></p>`)}
-          </section>`);
+const voiceBlock = (g, i) => `            <details class="voice"${i === 0 ? ' open' : ''}>
+              <summary class="voice__name">${esc(g.he)}${g.items.length > 1 ? `<span class="voice__n">${g.items.length}</span>` : ''}</summary>
+              <div class="voice__body">
+${join(g.items, (it) => `                <p class="voice__t">${esc(it.text)} <a class="voice__src" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer">${esc(it.heRef || it.ref)} ↗</a></p>`)}
+              </div>
+            </details>`;
 
 const expandFor = (id) => {
   const list = voices(id);
   if (!list.length) return '';
   return `        <details class="expand no-print" id="x-${esc(id)}">
-        <summary>
-          <span class="expand__label"><span class="expand__more">להרחיב</span><span class="expand__less">לצמצם</span></span>
-          <span class="expand__names">${list.map((g) => esc(g.he)).join(' · ')}</span>
-        </summary>
-        <div class="expand__body">
-${voiceBlocks(list)}
-          <p class="expand__foot">מספריא. הטקסט שלמעלה הוא נוסח ״לשון חכמים״ ואינו מוחלף.</p>
-        </div>
-      </details>`;
+          <summary>
+            <span class="expand__label"><span class="expand__more">להרחיב</span><span class="expand__less">לצמצם</span></span>
+            <span class="expand__names">${list.map((g) => esc(g.he)).join(' · ')}</span>
+          </summary>
+          <div class="expand__body">
+${list.map(voiceBlock).join('\n')}
+            <p class="expand__foot">מספריא. הטקסט שלמעלה הוא נוסח ״לשון חכמים״ ואינו מוחלף.</p>
+          </div>
+        </details>`;
 };
 
 /* ── shell ─────────────────────────────────────────────────────── */

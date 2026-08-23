@@ -50,6 +50,55 @@ const VOICES = [
   { key: 'maharsha',  he: 'מהרש״א',           max: 2, title: /^chidushei (agadot|halachot) on |maharsha/i }
 ];
 
+/* ── שמות בעברית ───────────────────────────────────────────────────
+   ספריא לא מחזירה heRef בתשובת הקישורים, אז ממירים בעצמנו.
+   כל מה שלא מזוהה נשאר באנגלית — עדיף מאשר לנחש.               */
+const BOOKS = {
+  Berakhot: 'ברכות', Pesachim: 'פסחים', Chagigah: 'חגיגה', Chullin: 'חולין',
+  'Bava Kamma': 'בבא קמא', Negaim: 'נגעים',
+  Genesis: 'בראשית', Exodus: 'שמות', Leviticus: 'ויקרא', Numbers: 'במדבר',
+  Deuteronomy: 'דברים', Hosea: 'הושע', Psalms: 'תהלים', Proverbs: 'משלי',
+  'Song of Songs': 'שיר השירים', Isaiah: 'ישעיהו', Jeremiah: 'ירמיהו'
+};
+const WRITERS = [
+  [/^Rashi on /, 'רש״י'], [/^Bartenura on /, 'ברטנורא'],
+  [/^Tosafot Yom Tov on /, 'תוספות יום טוב'], [/^Rambam on Mishnah /, 'רמב״ם'],
+  [/^Tosafot on /, 'תוספות'], [/^Chidushei Agadot on /, 'מהרש״א'],
+  [/^Chidushei Halachot on /, 'מהרש״א'], [/^Mishnah /, 'משנה']
+];
+const TANAKH = new RegExp('on (' + Object.keys(BOOKS).join('|') + ')\\b');
+
+/* מספר לאותיות */
+function gim(n) {
+  if (!n || n > 499) return String(n);
+  const H = [[400,'ת'],[300,'ש'],[200,'ר'],[100,'ק'],[90,'צ'],[80,'פ'],[70,'ע'],[60,'ס'],
+             [50,'נ'],[40,'מ'],[30,'ל'],[20,'כ'],[10,'י'],[9,'ט'],[8,'ח'],[7,'ז'],[6,'ו'],
+             [5,'ה'],[4,'ד'],[3,'ג'],[2,'ב'],[1,'א']];
+  let out = '', r = n;
+  for (const [v, l] of H) while (r >= v) { out += l; r -= v; }
+  return out.replace(/יה$/, 'טו').replace(/יו$/, 'טז');
+}
+const quote = (t) => t.length > 1 ? t.slice(0, -1) + '״' + t.slice(-1) : t + '׳';
+
+/* "Rashi on Chagigah 27a:1:1" → "רש״י, חגיגה כ״ז ע״א" */
+function hebrewRef(ref) {
+  if (!ref) return null;
+  const raw = String(ref).replace(/[_.]/g, ' ');
+  let writer = null, rest = raw;
+  for (const [re, he] of WRITERS) {
+    if (re.test(raw)) { writer = he; rest = raw.replace(re, ''); break; }
+  }
+  rest = rest.replace(/^Mishnah /, '');
+  const m = rest.match(/^(.+?) (\d+)([ab])?(?::(\d+))?/);
+  if (!m) return null;
+  const book = BOOKS[m[1].trim()];
+  if (!book) return null;
+  let loc = m[3]
+    ? `${quote(gim(+m[2]))} ${m[3] === 'a' ? 'ע״א' : 'ע״ב'}`
+    : `${quote(gim(+m[2]))}${m[4] ? ', ' + gim(+m[4]) : ''}`;
+  return `${writer ? writer + ', ' : ''}${book} ${loc}`;
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const norm = (s) => String(s)
   .replace(/<[^>]+>/g, ' ')
@@ -150,8 +199,11 @@ async function collect(refSpec) {
   if (stein) {
     const segIdx = anchors ? Number(target.split('.').pop()) - 1 : 0;
     const txt = clean(stein.segments[segIdx] || (anchors ? '' : stein.segments.join(' ')));
-    if (txt.length > 12) out.steinsaltz = { he: 'ביאור שטיינזלץ', items: [{ ref: target, heRef: null, url: sefariaUrl(target), text: txt }] };
+    if (txt.length > 12) out.steinsaltz = { he: 'ביאור שטיינזלץ', items: [{ ref: target, heRef: hebrewRef(target), url: sefariaUrl(target), text: txt }] };
   }
+
+  /* שם החיבור שאנו עומדים בו — פירוש על מסכת אחרת הוא הפניה, לא פירוש */
+  const baseBook = ref.replace(/_/g, ' ').replace(/^Mishnah /, '').replace(/[ .]\d.*$/, '').trim();
 
   const links = await getJSON(`${API}/links/${encodeURIComponent(target)}?with_text=1`);
   for (const link of Array.isArray(links) ? links : []) {
@@ -160,12 +212,15 @@ async function collect(refSpec) {
       (v.title && v.title.test(title)) ||
       (v.category && link.category === v.category));
     if (!voice) continue;
+    /* מתקבל: פסוקים, פירוש על החיבור שלפנינו, או פירוש על פסוק שהוא מצטט */
+    const relevant = link.category === 'Tanakh' || title.includes(baseBook) || TANAKH.test(title);
+    if (!relevant) { if (VERBOSE) console.log(`      נדחה כלא שייך: ${link.ref}`); continue; }
     const he = Array.isArray(link.he) ? link.he.flat(Infinity).join(' ') : link.he;
     const text = clean(he || '');
     if (text.length < 8) continue;
     (out[voice.key] ||= { he: voice.he, items: [] });
     if (out[voice.key].items.some((i) => i.ref === link.ref)) continue;
-    out[voice.key].items.push({ ref: link.ref, heRef: link.heRef || null, url: sefariaUrl(link.ref), text });
+    out[voice.key].items.push({ ref: link.ref, heRef: link.heRef || hebrewRef(link.ref), url: sefariaUrl(link.ref), text });
   }
   return out;
 }
