@@ -1,0 +1,5 @@
+{
+  "generatedAt": null,
+  "note": "נמשך מספריא בזמן build על ידי scripts/fetch-sefaria.mjs. כל עוד הקובץ ריק, שכבת העיון פשוט אינה מוצגת — האתר עובד בלעדיה.",
+  "refs": {}
+}
