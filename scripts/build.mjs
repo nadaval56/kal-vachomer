@@ -12,7 +12,6 @@ const read = (p) => JSON.parse(readFileSync(resolve(ROOT, p), 'utf8'));
 
 const texts = read('data/texts.json');
 const study = read('data/study.json');
-const middot = read('data/middot.json');
 const commentary = (() => { try { return read('data/commentary.json'); } catch { return { refs: {} }; } })();
 
 /* חתימת תוכן על הנכסים. בלעדיה דפדפן שכבר ביקר באתר מקבל CSS ישן
@@ -113,11 +112,11 @@ ${body}
 
 function topbar({ base = '', here }) {
   const other = here === 'pray'
-    ? ''                                   /* הקישור למצב הלימוד מוסתר לעת עתה */
+    ? `<a class="btn btn--ghost" href="${base}study/">העמקה</a>`
     : `<a class="btn btn--ghost" href="${base}">להתפלל</a>`;
   return `<header class="topbar no-print">
   <div class="wrap topbar__in">
-    <a class="brand" href="${base}">סגולת הקל וחומר${here === 'pray' ? '' : '<span> · להבין</span>'}</a>
+    <a class="brand" href="${base}">סגולת הקל וחומר${here === 'pray' ? '' : '<span> · העמקה</span>'}</a>
     <div class="topbar__sp"></div>
     <div class="tools">
       ${here === 'pray' ? `<button class="btn" type="button" data-print title="הדפסה">${ico.print}<span class="sr">הדפסה</span></button>` : ''}
@@ -232,90 +231,96 @@ ${join(t.footer.lines, (l) => `      <p>${html(l)}</p>`)}
   });
 }
 
-/* ══ עמוד "להבין" ══════════════════════════════════════════════ */
+/* ══ עמוד "להבין" ═══════════════════════════════════════════════
+   ארבעה חלקים, כל אחד נפתח ונסגר בפני עצמו.                     */
 function renderStudy() {
   const s = study;
 
+  const part = ({ n, title, lead, body, open }) => `
+    <details class="part"${open ? ' open' : ''} id="part-${esc(n)}">
+      <summary>
+        <span class="part__n" aria-hidden="true">${esc(n)}</span>
+        <span class="part__head">
+          <span class="part__title">${CHEV}${esc(title)}</span>
+          <span class="part__lead">${esc(lead)}</span>
+        </span>
+      </summary>
+      <div class="part__body">
+${body}
+      </div>
+    </details>`;
 
-  const step = (st) => `
-      <div class="step">
-        <span class="step__dot" aria-hidden="true">${st.n}</span>
-        <p class="step__kicker">${esc(st.kicker)}</p>
-        <h3>${esc(st.title)}</h3>
-        <p class="step__lead">${html(st.lead)}</p>
-        ${st.quote ? `<blockquote class="quoteblock">${join(st.quote, (q) => `<p>${html(q)}</p>`)}</blockquote>` : ''}
-        ${st.summary ? `<ul>${join(st.summary, (q) => `<li>${html(q)}</li>`)}</ul>` : ''}
-        ${st.quoteStatus ? `<div class="gap"><p class="gap__tag">${st.quoteStatus.state === 'missing' ? 'חסר מתועד' : 'הערת מקור'}</p><p>${esc(st.quoteStatus.text)}</p></div>` : ''}
-        ${st.note ? `<p class="step__note">${html(st.note)}</p>` : ''}
-        ${st.link ? `<a class="srclink" href="${esc(st.link.url)}" target="_blank" rel="noopener noreferrer">${esc(st.link.label)} ↗</a>` : ''}
-      </div>`;
+  /* ציטוט: מקור מעל, טקסט מתחת — כמו בשכבת העיון שבעמוד הראשי */
+  const quote = (lines, source) => `        <blockquote class="say">
+          ${source ? `<p class="say__src">${esc(source)}</p>` : ''}
+${join(lines, (l) => `          <p>${html(l)}</p>`)}
+        </blockquote>`;
 
-  const ladder = (it) => `
-        <p class="ladder__base">${esc(it.base)}</p>
-        <div class="ladder">
-${join(it.rungs, (r) => `          <div class="rung">
-            <span class="rung__from">${html(r.from)}</span>
-            <span class="rung__arrow" aria-hidden="true">←</span>
-            <span class="rung__to">${html(r.to)}</span>
-            <span class="rung__text">${esc(r.text)}</span>
+  const prose = (lines) => join(lines, (l) => `        <p class="prose">${html(l)}</p>`);
+
+  const more = (title, lines) => `        <details class="more">
+          <summary>${CHEV}<span>${esc(title)}</span></summary>
+          <div class="more__body">
+${join(lines, (l) => `            <p class="prose prose--quote">${html(l)}</p>`)}
+          </div>
+        </details>`;
+
+  /* ── א ── */
+  const inst = s.instructions;
+  const partA = part({ n: inst.n, title: inst.title, lead: inst.lead, open: true, body:
+    join(inst.items, (it) => `        <section class="instr">
+          <p class="kicker">${esc(it.kicker)}</p>
+${it.quote ? quote([it.quote], it.source) : ''}
+${it.raw ? `        <p class="micro">${esc(it.raw)}</p>` : ''}
+${prose(it.body)}
+${it.status ? `        <p class="flag">${esc(it.status)}</p>` : ''}
+        </section>`) });
+
+  /* ── ב ── */
+  const idea = s.idea;
+  const partB = part({ n: idea.n, title: idea.title, lead: idea.lead, body: [
+    prose(idea.explain),
+    quote(idea.core, idea.source),
+    `        <p class="micro">${html(idea.maggid)}</p>`,
+    more(idea.fullTitle, idea.full),
+    `        <p class="kicker" style="margin-top:1.6rem">${esc(idea.pairsTitle)}</p>`,
+    `        <div class="pairs">
+${join(idea.pairs, (pr) => `          <div class="pair">
+            <p class="pair__top"><span class="pair__d">${html(pr.derash)}</span><span class="pair__arrow" aria-hidden="true">←</span><span class="pair__r">${html(pr.rachamim)}</span></p>
+            <p class="pair__why">${html(pr.why)}</p>
           </div>`)}
-        </div>
-        <dl class="slots" style="margin-top:1rem">
-          <div class="slot slot--out"><dt>המסקנה</dt><dd>${esc(it.conclusion)}</dd></div>
-        </dl>`;
+        </div>`,
+    `        <p class="flag">${esc(idea.gap)}</p>`,
+    `        <details class="more">
+          <summary>${CHEV}<span>${esc(idea.listTitle)}</span></summary>
+          <div class="more__body">
+            <p class="micro" style="margin-bottom:.8rem">${esc(idea.listNote)}</p>
+            <ol class="midlist">
+${join(idea.list, (x, i) => `              <li${i < 3 ? ' class="is-paired"' : ''}>${html(x)}</li>`)}
+            </ol>
+          </div>
+        </details>`
+  ].filter(Boolean).join('\n') });
 
-  const slots = (it) => `
-        <dl class="slots">
-          <div class="slot"><dt>הקל</dt><dd>${esc(it.kal)}</dd></div>
-          <div class="slot"><dt>החומר</dt><dd>${esc(it.chomer)}</dd></div>
-          <div class="slot"><dt>הצד השווה</dt><dd>${esc(it.shaveh)}</dd></div>
-          <div class="slot slot--out"><dt>המסקנה</dt><dd>${esc(it.conclusion)}</dd></div>
-        </dl>`;
+  /* ── ג ── */
+  const demo = s.demo;
+  const partC = part({ n: demo.n, title: demo.title, lead: demo.lead, body: [
+    quote(demo.gemara, demo.gemaraSource),
+    prose(demo.explain),
+    quote(demo.core, demo.source),
+    more(demo.fullTitle, demo.full)
+  ].join('\n') });
 
-  const breakdowns = join(s.breakdown.items, (it) => `
-      <article class="bd" id="bd-${esc(it.id)}">
-        <div class="bd__head">
-          <h3 class="bd__label">${esc(it.label)}</h3>
-          <span class="bd__ref">${esc(it.ref)}</span>
-        </div>
-        ${it.lead ? `<p class="bd__lead">${html(it.lead)}</p>` : ''}
-${it.isLadder ? ladder(it) : slots(it)}
-        ${it.extra ? `<p class="bd__extra">${html(it.extra)}</p>` : ''}
-${expandFor(it.id)}
-      </article>`);
-
-  const rows = join(middot.rows, (r) => {
-    const open = !r.rachamim;
-    return `        <tr${open ? ' class="is-open"' : ''}>
-          <td class="n">${r.n}</td>
-          <td class="derash">${html(r.derash)}</td>
-          <td class="rach">${r.rachamim ? html(r.rachamim) : '<span class="dash">-</span>'}</td>
-          <td>${r.explanation ? esc(r.explanation) : '<span class="dash">-</span>'}</td>
-          <td class="src src--${r.source.kind}">${r.source.url
-            ? `<a href="${esc(r.source.url)}" target="_blank" rel="noopener noreferrer">${esc(r.source.text)} ↗</a>`
-            : esc(r.source.text)}</td>
-        </tr>`;
-  });
-
-  const reasons = join(s.omission.reasons, (r) => `
-        <article class="reason">
-          <p class="reason__kicker">${esc(r.kicker)}</p>
-          <h3>${esc(r.title)}</h3>
-${join(r.lines, (l) => `          <p>${html(l)}</p>`)}
-        </article>`);
+  /* ── ד ── ההשמטה. פירוק הלימודים ירד בינתיים (breakdown.hidden). */
+  const om = s.omission;
+  const partD = part({ n: om.n, title: om.title, lead: om.lead, body: [
+    prose(om.explain.slice(0, 2)),
+    quote(om.quote, om.source),
+    prose(om.explain.slice(2))
+  ].join('\n') });
 
   const body = `
 ${topbar({ base: '../', here: 'study' })}
-<nav class="toc no-print" aria-label="חלקי העמוד">
-  <div class="wrap">
-    <ol>
-      <li><a href="#chain">שרשרת המסירה</a></li>
-      <li><a href="#middot">י״ג מול י״ג</a></li>
-      <li><a href="#breakdown">פירוק הקל וחומר</a></li>
-      <li><a href="#omission">ההשמטה</a></li>
-    </ol>
-  </div>
-</nav>
 <main id="main" class="study">
   <div class="wrap">
 
@@ -324,72 +329,22 @@ ${topbar({ base: '../', here: 'study' })}
       <h1>${esc(s.meta.title)}</h1>
       <p class="hero__sub">${esc(s.meta.subtitle)}</p>
       <div class="hero__rule"></div>
-      <p class="section__lead" style="margin-top:1.6rem">${esc(s.meta.intro)}</p>
+      <p class="section__lead" style="margin-top:1.4rem">${esc(s.meta.intro)}</p>
     </section>
 
-    <section class="section" id="chain" aria-labelledby="chain-h">
-      <h2 class="h2" id="chain-h">${esc(s.chain.title)}</h2>
-      <p class="section__lead">${esc(s.chain.lead)}</p>
-      <div class="chain">
-${join(s.chain.steps, step)}
-      </div>
-      <div class="highlight">
-        <h3>${esc(s.chain.highlight.title)}</h3>
-${join(s.chain.highlight.lines, (l) => `        <p>${html(l)}</p>`)}
-      </div>
-    </section>
-
-    <section class="section" id="middot" aria-labelledby="middot-h">
-      <h2 class="h2" id="middot-h">${esc(middot.title)}</h2>
-      <p class="section__lead">${esc(middot.lead)}</p>
-
-      <div class="gap" style="margin-top:1.4rem;max-width:var(--measure)">
-        <p class="gap__tag">${esc(middot.warning.title)}</p>
-${join(middot.warning.lines, (l) => `        <p>${esc(l)}</p>`)}
-      </div>
-
-      <div class="tablewrap">
-        <table class="middot">
-          <caption class="sr">י״ג מידות שהתורה נדרשת בהן מול י״ג מידות הרחמים</caption>
-          <colgroup><col class="c-n"><col class="c-d"><col class="c-r"><col class="c-e"><col class="c-s"></colgroup>
-          <thead><tr><th scope="col"><span class="sr">מספר</span></th>${join(middot.columns, (c) => `<th scope="col">${esc(c)}</th>`)}</tr></thead>
-          <tbody>
-${rows}
-          </tbody>
-        </table>
-      </div>
-
-      <div style="margin-top:1.6rem;max-width:var(--measure)">
-        <p class="step__kicker">${esc(middot.rachamimList.title)}</p>
-        <p class="note" style="margin-top:.4rem">${esc(middot.rachamimList.sub)}</p>
-        <div class="chips">
-${join(middot.rachamimList.items, (x, i) => `          <span class="chip${['אֵ־ל', 'רַחוּם', 'וְחַנּוּן'].includes(x) ? ' chip--on' : ''}">${html(x)}</span>`)}
-        </div>
-        <p class="step__note" style="margin-top:1.2rem"><strong>${esc(middot.countingNote.title)}.</strong> ${esc(middot.countingNote.text)}</p>
-      </div>
-    </section>
-
-    <section class="section" id="breakdown" aria-labelledby="bd-h">
-      <h2 class="h2" id="bd-h">${esc(s.breakdown.title)}</h2>
-      <p class="section__lead">${esc(s.breakdown.lead)}</p>
-      <div class="breakdowns">${breakdowns}
-      </div>
-    </section>
-
-    <section class="section" id="omission" aria-labelledby="om-h">
-      <h2 class="h2" id="om-h">${esc(s.omission.title)}</h2>
-      <p class="section__lead">${esc(s.omission.lead)}</p>
-      <div class="reasons">${reasons}
-      </div>
-      <p class="close-note">${html(s.omission.close)}</p>
+    <section class="parts">
+${partA}
+${partB}
+${partC}
+${partD}
     </section>
 
   </div>
 
   <footer class="foot">
     <div class="wrap">
-      <div class="foot__nav no-print"><a href="../">חזרה ללימוד ולבקשה</a></div>
-      <p class="step__kicker" style="margin-bottom:.7rem">${esc(s.colophon.title)}</p>
+      <div class="foot__nav no-print"><a href="../">חזרה ללימוד ולתפילה</a></div>
+      <p class="kicker" style="margin-bottom:.7rem">${esc(s.colophon.title)}</p>
 ${join(s.colophon.lines, (l) => `      <p>${html(l)}</p>`)}
     </div>
   </footer>
@@ -397,7 +352,7 @@ ${join(s.colophon.lines, (l) => `      <p>${html(l)}</p>`)}
 
   return page({
     title: `להבין - ${texts.meta.titlePlain}`,
-    desc: 'שרשרת המסירה מן המגיד ממעזריטש דרך הבני יששכר עד הבן איש חי, טבלת י״ג מידות הדרשה מול י״ג מידות הרחמים, ופירוק הלוגיקה של כל אחד מחמשת הקטעים.',
+    desc: 'שתי ההנחיות של מרן הבן איש חי, הרעיון שמאחורי הסדר לפי הבני יששכר בשם המגיד ממעזריטש, ההדגמה שבספר בן יהוידע, ופירוק חמשת הלימודים.',
     base: '../',
     body
   });
