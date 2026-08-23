@@ -135,7 +135,7 @@ const hebrewRef = (r) => refParts(r)?.he || null;
 const hebrewLoc = (r) => refParts(r)?.loc || null;
 
 /* מקורות שאינם חלק מהאיסוף, אבל שימושי לסקור אותם (--probe) */
-const PROBE_EXTRA = ['Gittin.16a'];
+const PROBE_EXTRA = ['Gittin.16a', 'Gittin.16b'];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const norm = (s) => String(s)
@@ -315,7 +315,7 @@ if (PROBE) {
       try {
         for (const v of await segmentsFor(ref)) {
           console.log(`  גרסה: ${v.title} (${v.segments.length} קטעים)`);
-          v.segments.forEach((seg, i) => console.log(`   [${i + 1}] ${norm(seg).slice(0, 110)}`));
+          v.segments.forEach((seg, i) => console.log(`   [${i + 1}] ${norm(seg).slice(0, 230)}`));
         }
       } catch (err) { console.log(`  נכשל: ${err.message}`); }
       await sleep(400);
