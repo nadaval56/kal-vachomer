@@ -290,7 +290,6 @@ ${join(idea.pairs, (pr) => `          <div class="pair">
             <p class="pair__why">${html(pr.why)}</p>
           </div>`)}
         </div>`,
-    `        <p class="flag">${esc(idea.gap)}</p>`,
     `        <details class="more">
           <summary>${CHEV}<span>${esc(idea.listTitle)}</span></summary>
           <div class="more__body">
@@ -307,8 +306,7 @@ ${join(idea.list, (x, i) => `              <li${i < 3 ? ' class="is-paired"' : '
   const partC = part({ n: demo.n, title: demo.title, lead: demo.lead, body: [
     quote(demo.gemara, demo.gemaraSource),
     prose(demo.explain),
-    quote(demo.core, demo.source),
-    more(demo.fullTitle, demo.full)
+    quote(demo.core, demo.source)
   ].join('\n') });
 
   /* ── ד ── ההשמטה. פירוק הלימודים ירד בינתיים (breakdown.hidden). */
@@ -329,7 +327,6 @@ ${topbar({ base: '../', here: 'study' })}
       <h1>${esc(s.meta.title)}</h1>
       <p class="hero__sub">${esc(s.meta.subtitle)}</p>
       <div class="hero__rule"></div>
-      <p class="section__lead" style="margin-top:1.4rem">${esc(s.meta.intro)}</p>
     </section>
 
     <section class="parts">
@@ -344,14 +341,13 @@ ${partD}
   <footer class="foot">
     <div class="wrap">
       <div class="foot__nav no-print"><a href="../">חזרה ללימוד ולתפילה</a></div>
-      <p class="kicker" style="margin-bottom:.7rem">${esc(s.colophon.title)}</p>
-${join(s.colophon.lines, (l) => `      <p>${html(l)}</p>`)}
+${join(texts.footer.lines, (l) => `      <p>${html(l)}</p>`)}
     </div>
   </footer>
 </main>`;
 
   return page({
-    title: `להבין - ${texts.meta.titlePlain}`,
+    title: `העמקה - ${texts.meta.titlePlain}`,
     desc: 'שתי ההנחיות של מרן הבן איש חי, הרעיון שמאחורי הסדר לפי הבני יששכר בשם המגיד ממעזריטש, ההדגמה שבספר בן יהוידע, ופירוק חמשת הלימודים.',
     base: '../',
     body
