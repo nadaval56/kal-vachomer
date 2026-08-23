@@ -189,15 +189,25 @@ section{scroll-margin-top:70px}
 .passages{display:grid;gap:clamp(1rem,3vw,1.5rem)}
 .passage{position:relative;background:var(--surface);border:1px solid var(--line);
   border-radius:var(--radius);padding:clamp(1.35rem,4.5vw,2.2rem);box-shadow:var(--shadow)}
-.passage__head{display:flex;align-items:baseline;gap:.7rem;margin-bottom:1.15rem;flex-wrap:wrap}
+/* כותרת ← תת-כותרת ← ציון מקור ← הטקסט.
+   הכול בתוך אותו flex, כדי שבהדפסה אפשר להחזיר את ציון
+   המקור לשורת הכותרת בעזרת order.                              */
+.passage__head{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;margin-bottom:1.3rem}
 .num{flex:none;width:1.7rem;height:1.7rem;border-radius:50%;border:1px solid var(--line-2);
   display:grid;place-items:center;font-family:var(--font-ui);font-size:.74rem;font-weight:600;
-  color:var(--accent);line-height:1;align-self:center}
+  color:var(--accent);line-height:1}
 .passage__label{font-family:var(--font-ui);font-size:.95rem;font-weight:600;color:var(--ink)}
-.passage__ref{font-family:var(--font-ui);font-size:.78rem;color:var(--ink-3);margin-inline-start:auto}
-.passage__lead{font-family:var(--font-ui);font-size:.87rem;line-height:1.7;color:var(--ink-3);
-  margin:-.55rem 0 1.25rem;padding-inline-start:2.4rem}
-@media (max-width:520px){.passage__lead{padding-inline-start:0}.passage__ref{margin-inline-start:0;width:100%}}
+.passage__lead{order:2;flex-basis:100%;font-family:var(--font-ui);font-size:.87rem;
+  line-height:1.7;color:var(--ink-3);margin-top:.2rem;padding-inline-start:2.35rem}
+.passage__ref{order:3;flex-basis:100%;font-family:var(--font-ui);font-size:.76rem;
+  letter-spacing:.05em;color:var(--ink-3);line-height:1.5;padding-inline-start:2.35rem}
+@media (max-width:520px){.passage__lead,.passage__ref{padding-inline-start:0}}
+
+/* ציון המקור פותח את שכבת העיון. הקו המקווקו נצמד לטקסט, לא לרוחב השורה. */
+.passage__ref[data-ref-for]{cursor:pointer;text-decoration:underline dashed;
+  text-decoration-color:var(--line-2);text-decoration-thickness:1px;text-underline-offset:.3em;
+  transition:color .12s ease,text-decoration-color .12s ease}
+.passage__ref[data-ref-for]:hover{color:var(--accent);text-decoration-color:currentColor}
 .text{display:grid;gap:.95em}
 .text p{font-size:1.03em;line-height:var(--lh);text-align:start;hanging-punctuation:allow-end}
 
@@ -383,7 +393,8 @@ tr.is-open{background:repeating-linear-gradient(-45deg,transparent,transparent 9
   .passage__head{margin-bottom:2pt;gap:.4rem}
   .num{width:1.15rem;height:1.15rem;font-size:6.5pt;border-color:#999;color:#000}
   .passage__label{font-size:8.5pt}
-  .passage__ref{font-size:7.5pt;color:#555;margin-inline-start:0}
+  .passage__ref,.passage__ref[data-ref-for]{order:0;flex-basis:auto;font-size:7.5pt;color:#555;
+    padding-inline-start:0;text-decoration:none;letter-spacing:0}
   .passage__lead{display:none}
   .text{gap:2pt}
   .text p{font-size:9.6pt;line-height:1.62;text-align:justify}
