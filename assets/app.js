@@ -129,6 +129,17 @@
     render();
   }
 
+  /* ── "להרחיב" ⇄ "לצמצם" ───────────────────────────────────────
+     מוחלף בטקסט ולא בהסתרת אלמנט: אם ה-CSS מגיע ישן מהקאש,
+     עדיין רואים מילה אחת ולא שתיים.                              */
+  Array.prototype.slice.call(document.querySelectorAll('.expand')).forEach(function (box) {
+    var word = box.querySelector('.expand__word');
+    if (!word) return;
+    var sync = function () { word.textContent = box.open ? 'לצמצם' : 'להרחיב'; };
+    box.addEventListener('toggle', sync);
+    sync();
+  });
+
   /* ── המקור שבכותרת הקטע פותח את שכבת העיון ────────────────────── */
   Array.prototype.slice.call(document.querySelectorAll('[data-ref-for]')).forEach(function (ref) {
     var box = document.getElementById('x-' + ref.getAttribute('data-ref-for'));
