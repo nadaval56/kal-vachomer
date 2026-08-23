@@ -443,8 +443,8 @@ tr.is-open{background:repeating-linear-gradient(-45deg,transparent,transparent 9
 .voice__body{padding:.1rem 0 .95rem;padding-inline-start:.9rem}
 .voice__t{font-size:.95em;line-height:1.95;color:var(--ink-2)}
 .voice__t+.voice__t{margin-top:.6rem;padding-top:.6rem;border-top:1px dashed var(--line)}
-.voice__src{font-family:var(--font-ui);font-size:.72rem;color:var(--ink-3);
-  white-space:nowrap;border-bottom-color:transparent}
+.voice__src{display:block;margin-top:.4rem;font-family:var(--font-ui);font-size:.72rem;
+  color:var(--ink-3);white-space:nowrap;border-bottom-color:transparent;width:fit-content}
 .voice__src:hover{color:var(--accent);border-bottom-color:currentColor}
 .expand__foot{font-family:var(--font-ui);font-size:.75rem;color:var(--ink-3);
   border-top:1px solid var(--line);padding-top:.7rem;margin-top:.3rem;line-height:1.6}
