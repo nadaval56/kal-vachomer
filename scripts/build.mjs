@@ -311,36 +311,13 @@ ${join(idea.list, (x, i) => `              <li${i < 3 ? ' class="is-paired"' : '
     more(demo.fullTitle, demo.full)
   ].join('\n') });
 
-  /* ── ד ── */
-  const slots = (it) => `          <dl class="slots">
-            <div class="slot"><dt>הקל</dt><dd>${esc(it.kal)}</dd></div>
-            <div class="slot"><dt>החומר</dt><dd>${esc(it.chomer)}</dd></div>
-            <div class="slot"><dt>הצד השווה</dt><dd>${esc(it.shaveh)}</dd></div>
-            <div class="slot slot--out"><dt>המסקנה</dt><dd>${esc(it.conclusion)}</dd></div>
-          </dl>`;
-
-  const ladder = (it) => `          <p class="prose">${esc(it.base)}</p>
-          <div class="ladder">
-${join(it.rungs, (r) => `            <div class="rung">
-              <span class="rung__from">${html(r.from)}</span>
-              <span class="rung__arrow" aria-hidden="true">←</span>
-              <span class="rung__to">${html(r.to)}</span>
-              <span class="rung__text">${esc(r.text)}</span>
-            </div>`)}
-          </div>
-          <dl class="slots" style="margin-top:1rem">
-            <div class="slot slot--out"><dt>המסקנה</dt><dd>${esc(it.conclusion)}</dd></div>
-          </dl>`;
-
-  const partD = part({ n: s.breakdown.n, title: s.breakdown.title, lead: s.breakdown.lead, body:
-    join(s.breakdown.items, (it, i) => `        <details class="more more--bd"${i === 0 ? ' open' : ''}>
-          <summary>${CHEV}<span>${esc(it.label)}</span><span class="more__ref">${esc(it.ref)}</span></summary>
-          <div class="more__body">
-${it.lead ? `            <p class="prose">${html(it.lead)}</p>` : ''}
-${it.isLadder ? ladder(it) : slots(it)}
-${expandFor(it.id)}
-          </div>
-        </details>`) });
+  /* ── ד ── ההשמטה. פירוק הלימודים ירד בינתיים (breakdown.hidden). */
+  const om = s.omission;
+  const partD = part({ n: om.n, title: om.title, lead: om.lead, body: [
+    prose(om.explain.slice(0, 2)),
+    quote(om.quote, om.source),
+    prose(om.explain.slice(2))
+  ].join('\n') });
 
   const body = `
 ${topbar({ base: '../', here: 'study' })}
