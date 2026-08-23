@@ -74,6 +74,28 @@
   var printBtn = document.querySelector('[data-print]');
   if (printBtn) printBtn.addEventListener('click', function () { window.print(); });
 
+  /* פרק סגור אינו מודפס - הדפדפן פשוט משמיט את תוכנו. לכן פותחים
+     הכול לפני ההדפסה ומחזירים אחריה בדיוק כפי שהיה.               */
+  var reclose = [];
+  function openAllForPrint() {
+    reclose = [];
+    Array.prototype.slice.call(document.querySelectorAll('details')).forEach(function (d) {
+      if (!d.open) { reclose.push(d); d.open = true; }
+    });
+  }
+  function restoreAfterPrint() {
+    reclose.forEach(function (d) { d.open = false; });
+    reclose = [];
+  }
+  window.addEventListener('beforeprint', openAllForPrint);
+  window.addEventListener('afterprint', restoreAfterPrint);
+  if (window.matchMedia) {
+    var mqp = window.matchMedia('print');
+    var onPrint = function (e) { (e.matches ? openAllForPrint : restoreAfterPrint)(); };
+    if (mqp.addEventListener) mqp.addEventListener('change', onPrint);
+    else if (mqp.addListener) mqp.addListener(onPrint);
+  }
+
   /* ── שם החולה ─────────────────────────────────────────────────── */
   var nameIn   = document.getElementById('patient-name');
   var motherIn = document.getElementById('mother-name');

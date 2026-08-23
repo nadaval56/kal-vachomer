@@ -112,11 +112,11 @@ ${body}
 
 function topbar({ base = '', here }) {
   const other = here === 'pray'
-    ? ''                                   /* הקישור למצב הלימוד מוסתר לעת עתה */
+    ? `<a class="btn btn--ghost" href="${base}study/">העמקה</a>`
     : `<a class="btn btn--ghost" href="${base}">להתפלל</a>`;
   return `<header class="topbar no-print">
   <div class="wrap topbar__in">
-    <a class="brand" href="${base}">סגולת הקל וחומר${here === 'pray' ? '' : '<span> · להבין</span>'}</a>
+    <a class="brand" href="${base}">סגולת הקל וחומר${here === 'pray' ? '' : '<span> · העמקה</span>'}</a>
     <div class="topbar__sp"></div>
     <div class="tools">
       ${here === 'pray' ? `<button class="btn" type="button" data-print title="הדפסה">${ico.print}<span class="sr">הדפסה</span></button>` : ''}
