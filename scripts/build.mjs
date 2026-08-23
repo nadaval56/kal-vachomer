@@ -75,7 +75,8 @@ ${list.map(voiceBlock).join('\n')}
 };
 
 /* ── shell ─────────────────────────────────────────────────────── */
-function page({ title, desc, base = '', bodyClass = '', body }) {
+function page({ title, desc, base = '', path = '', bodyClass = '', body, jsonld }) {
+  const canonical = new URL(path, texts.meta.siteUrl).href;
   return `<!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -86,10 +87,12 @@ function page({ title, desc, base = '', bodyClass = '', body }) {
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#FAF9F6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1013" media="(prefers-color-scheme: dark)">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<link rel="canonical" href="${canonical}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
+<meta property="og:url" content="${canonical}">
 <meta property="og:locale" content="he_IL">
 <meta property="og:image" content="${OG}">
 <meta property="og:image:width" content="1200">
@@ -106,7 +109,7 @@ function page({ title, desc, base = '', bodyClass = '', body }) {
 var s=d.getItem('kv:size');r.setAttribute('data-size',/^[123]$/.test(s)?s:'2');
 var t=d.getItem('kv:theme');if(t==='night'||t==='day')r.setAttribute('data-theme',t);}catch(e){}})();
 </script>
-</head>
+${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, '\\u003C')}</script>\n` : ''}</head>
 <body${bodyClass ? ` class="${bodyClass}"` : ''}>
 <a class="skip" href="#main">דילוג לתוכן</a>
 ${body}
@@ -122,7 +125,7 @@ function topbar({ base = '', here }) {
     : `<a class="btn btn--ghost" href="${base}">להתפלל</a>`;
   return `<header class="topbar no-print">
   <div class="wrap topbar__in">
-    <a class="brand" href="${base}">סגולת הקל וחומר${here === 'pray' ? '' : '<span> · העמקה</span>'}</a>
+    <a class="brand" href="${base || './'}">סגולת הקל וחומר${here === 'pray' ? '' : '<span> · העמקה</span>'}</a>
     <div class="topbar__sp"></div>
     <div class="tools">
       ${here === 'pray' ? `<button class="btn" type="button" data-print title="הדפסה">${ico.print}<span class="sr">הדפסה</span></button>` : ''}
@@ -229,11 +232,36 @@ ${join(t.footer.lines, (l) => `      <p>${html(l)}</p>`)}
   </footer>
 </main>`;
 
+  const site = new URL('', texts.meta.siteUrl).href;
   return page({
     title: texts.meta.share.title,
     desc: texts.meta.share.desc,
     bodyClass: 'pray',
-    body
+    body,
+    jsonld: {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebSite',
+          '@id': `${site}#website`,
+          url: site,
+          name: t.meta.titlePlain,
+          description: t.meta.share.desc,
+          inLanguage: 'he'
+        },
+        {
+          '@type': 'WebPage',
+          '@id': site,
+          url: site,
+          name: t.meta.share.title,
+          description: t.meta.share.desc,
+          inLanguage: 'he',
+          isPartOf: { '@id': `${site}#website` },
+          primaryImageOfPage: { '@type': 'ImageObject', url: OG },
+          about: { '@type': 'CreativeWork', name: 'לשון חכמים, חלק ב, סימן טז', author: { '@type': 'Person', name: 'הבן איש חי' } }
+        }
+      ]
+    }
   });
 }
 
@@ -353,22 +381,61 @@ ${join(texts.footer.lines, (l) => `      <p>${html(l)}</p>`)}
   </footer>
 </main>`;
 
+  const site = new URL('', texts.meta.siteUrl).href;
+  const url = new URL('study/', texts.meta.siteUrl).href;
+  const desc = 'שתי ההנחיות של מרן הבן איש חי, הרעיון שמאחורי הסדר לפי הבני יששכר בשם המגיד ממעזריטש, הגילוי שבספר בן יהוידע, וההשמטה.';
   return page({
     title: `העמקה - ${texts.meta.titlePlain}`,
-    desc: 'שתי ההנחיות של מרן הבן איש חי, הרעיון שמאחורי הסדר לפי הבני יששכר בשם המגיד ממעזריטש, הגילוי שבספר בן יהוידע, וההשמטה.',
+    desc,
     base: '../',
-    body
+    path: 'study/',
+    body,
+    jsonld: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      '@id': url,
+      url,
+      name: `העמקה - ${texts.meta.titlePlain}`,
+      description: desc,
+      inLanguage: 'he',
+      isPartOf: { '@id': `${site}#website` }
+    }
   });
 }
+
+/* ── robots + sitemap ──────────────────────────────────────────
+   מה שאין לו נתיב מוצהר, מנוע חיפוש צריך לנחש. שני הקבצים נוצרים
+   מ־siteUrl כדי שלא ייווצר פער בין הכתובת שבמטא לכתובת שבמפה.
+   בלי lastmod: תאריך שמשתנה בכל build הוא רעש בהיסטוריה, וגוגל
+   ממילא הולך אחרי מה שהוא רואה בעמוד.                           */
+const PAGES = ['', 'study/'];
+const abs = (rel) => new URL(rel, texts.meta.siteUrl).href;
+
+const sitemap = () => `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${PAGES.map((rel) => `  <url><loc>${esc(abs(rel))}</loc></url>`).join('\n')}
+</urlset>
+`;
+
+/* על github.io זוחלים קוראים רק את robots.txt שבשורש הדומיין, ולא
+   את זה שבתיקיית הפרויקט. הקובץ נכתב בשביל דומיין משלנו בעתיד —
+   וממילא ברירת המחדל בהיעדרו היא "מותר לסרוק".                  */
+const robots = () => `User-agent: *
+Allow: /
+
+Sitemap: ${abs('sitemap.xml')}
+`;
 
 /* ── write ─────────────────────────────────────────────────────── */
 const out = [
   ['index.html', renderPray()],
-  ['study/index.html', renderStudy()]
+  ['study/index.html', renderStudy()],
+  ['sitemap.xml', sitemap()],
+  ['robots.txt', robots()]
 ];
 for (const [rel, content] of out) {
-  const abs = resolve(ROOT, rel);
-  mkdirSync(dirname(abs), { recursive: true });
-  writeFileSync(abs, content, 'utf8');
+  const dest = resolve(ROOT, rel);
+  mkdirSync(dirname(dest), { recursive: true });
+  writeFileSync(dest, content, 'utf8');
   console.log(`נכתב ${rel}  (${(content.length / 1024).toFixed(1)} KB)`);
 }
