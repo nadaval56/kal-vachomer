@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '17 4 1 * *'   # אחת לחודש
   workflow_dispatch:
+    inputs:
+      probe:
+        description: 'סקירה בלבד: מדפיס את קטעי המקור ולא כותב דבר'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -18,12 +23,14 @@ jobs:
           node-version: 22
 
       - name: fetch from sefaria
-        run: node scripts/fetch-sefaria.mjs --verbose
+        run: node scripts/fetch-sefaria.mjs --verbose ${{ inputs.probe && '--probe' || '' }}
 
       - name: rebuild pages
+        if: ${{ !inputs.probe }}
         run: node scripts/build.mjs
 
       - name: commit if changed
+        if: ${{ !inputs.probe }}
         run: |
           if git diff --quiet; then
             echo "אין שינוי."

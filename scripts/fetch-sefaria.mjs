@@ -18,6 +18,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'data/commentary.json');
 const DRY = process.argv.includes('--dry');
 const VERBOSE = process.argv.includes('--verbose');
+const PROBE = process.argv.includes('--probe');
 const API = 'https://www.sefaria.org/api';
 
 /* לכל קטע באתר: הרפרנסים בספריא, ומחרוזת לאיתור הקטע המדויק בתוכם */
@@ -39,11 +40,25 @@ const SOURCES = [
     refs: [{ ref: 'Mishnah_Negaim.12.5' }]
   },
   { id: 'chagiga', refs: [{ ref: 'Chagigah.27a', anchors: ['מזבח הזהב', 'פושעי ישראל', 'רקתך'] }] },
-  { id: 'pesachim', refs: [
-      { ref: 'Pesachim.87b', anchors: ['שאשתך זונה', 'בני בחוני', 'קנינין'] },
-      { ref: 'Pesachim.87b', anchors: ['אשת זנונים', 'דבלים'] }
-    ] },
-  { id: 'brachot', refs: [{ ref: 'Berakhot.5a', anchors: ['שן ועין', 'ממרקין', 'תיסרנו'] }] }
+  {
+    id: 'pesachim',
+    caps: { steinsaltz: 5 },
+    refs: [{
+      ref: 'Pesachim.87b',
+      anchors: ['שאשתך זונה', 'בני בחוני', 'קנינין'],
+      /* הביאור צריך לכסות את כל הדיאלוג, לא רק את שורת הקל וחומר */
+      steinSpan: { from: ['לאחר שנולדו', 'ללמוד ממשה'], to: ['ובטל גזירה', 'והתחיל לברכן'] }
+    }]
+  },
+  {
+    id: 'brachot',
+    caps: { steinsaltz: 2 },
+    refs: [{
+      ref: 'Berakhot.5a',
+      anchors: ['שן ועין', 'ממרקין', 'תיסרנו'],
+      steinSpan: { from: ['מה תלמוד לומר ומתורתך', 'אל תקרי'], to: ['שן ועין', 'ממרקין'] }
+    }]
+  }
 ];
 
 /* מי נכנס, ובאיזה סדר יוצג */
@@ -130,6 +145,7 @@ function clean(html) {
     .replace(/\*\([^)]*\)/g, '')      /* הערות נוסח של ספריא בתוך הפסוק */
     .replace(/[\u0591-\u05AF\u05BD]/g, '')  /* טעמי מקרא — הגופן שבאתר בלעדיהם */
     .replace(/^[א-ת] (?=\S)/, '')     /* אות סימון קטע של ספריא */
+    .replace(/[\u2014\u2013]/g, '-')  /* רק מקפים קצרים באתר */
     .replace(/\s+([,.;:])/g, '$1')
     .replace(/\s+/g, ' ')
     .trim();
@@ -218,6 +234,33 @@ async function collect(refSpec) {
   /* שם החיבור שאנו עומדים בו — פירוש על מסכת אחרת הוא הפניה, לא פירוש */
   const baseBook = ref.replace(/_/g, ' ').replace(/^Mishnah /, '').replace(/[ .]\d.*$/, '').trim();
 
+  /* ביאור שטיינזלץ מגיע כקישור לכל קטע בנפרד. כשהלימוד שלנו משתרע על
+     כמה קטעים, איסוף של קטע אחד נותן ביאור חתוך.                     */
+  if (refSpec.steinSpan) {
+    const a = locateSegment(versions, refSpec.steinSpan.from);
+    const b = locateSegment(versions, refSpec.steinSpan.to);
+    if (a && b) {
+      const [lo, hi] = a <= b ? [a, b] : [b, a];
+      if (VERBOSE) console.log(`      ביאור שטיינזלץ: קטעים ${lo}-${hi}`);
+      for (let i = lo; i <= hi; i++) {
+        const segRef = `${ref}.${i}`;
+        try {
+          const segLinks = await getJSON(`${API}/links/${encodeURIComponent(segRef)}?with_text=1`);
+          for (const l of Array.isArray(segLinks) ? segLinks : []) {
+            if (!/steinsaltz|שטיינזלץ/i.test(l.index_title || '')) continue;
+            const txt = clean(Array.isArray(l.he) ? l.he.flat(Infinity).join(' ') : l.he || '');
+            if (txt.length < 12) continue;
+            (out.steinsaltz ||= { he: 'ביאור שטיינזלץ', items: [] });
+            if (!out.steinsaltz.items.some((x) => x.ref === l.ref)) {
+              out.steinsaltz.items.push({ ref: l.ref, heRef: hebrewRef(l.ref), url: sefariaUrl(l.ref), text: txt });
+            }
+          }
+          await sleep(300);
+        } catch (err) { if (VERBOSE) console.log(`      קטע ${i} נכשל: ${err.message}`); }
+      }
+    } else if (VERBOSE) console.log('      טווח הביאור לא אותר');
+  }
+
   const links = await getJSON(`${API}/links/${encodeURIComponent(target)}?with_text=1`);
   for (const link of Array.isArray(links) ? links : []) {
     const title = link.index_title || link.collectiveTitle?.en || '';
@@ -248,6 +291,25 @@ function mergeInto(dst, src) {
   return dst;
 }
 
+if (PROBE) {
+  const seen = new Set();
+  for (const src of SOURCES) {
+    for (const { ref } of src.refs) {
+      if (seen.has(ref)) continue;
+      seen.add(ref);
+      console.log(`\n══ ${ref} ══`);
+      try {
+        for (const v of await segmentsFor(ref)) {
+          console.log(`  גרסה: ${v.title} (${v.segments.length} קטעים)`);
+          v.segments.forEach((seg, i) => console.log(`   [${i + 1}] ${norm(seg).slice(0, 110)}`));
+        }
+      } catch (err) { console.log(`  נכשל: ${err.message}`); }
+      await sleep(400);
+    }
+  }
+  process.exit(0);
+}
+
 const result = {
   generatedAt: new Date().toISOString(),
   note: 'שכבת עיון בלבד, נמשכת מספריא. הטקסט הראשי באתר הוא נוסח לשון חכמים.',
@@ -272,7 +334,7 @@ for (const src of SOURCES) {
   for (const v of VOICES) {
     if (!merged[v.key]?.items.length) continue;
     if (cur.drop?.includes(v.key)) { console.log(`   ${src.id}: ${merged[v.key].he} — הורד בליקוט`); continue; }
-    let items = merged[v.key].items.slice(0, v.max || 2);
+    let items = merged[v.key].items.slice(0, src.caps?.[v.key] ?? v.max ?? 2);
     const pick = cur.keep?.[v.key];
     if (pick) {
       items = pick.map((i) => items.at(i)).filter(Boolean);

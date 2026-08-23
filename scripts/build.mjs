@@ -220,7 +220,7 @@ ${join(t.footer.lines, (l) => `      <p>${html(l)}</p>`)}
 </main>`;
 
   return page({
-    title: `${texts.meta.titlePlain} — לימוד לרפואת חולה`,
+    title: `${texts.meta.titlePlain} - לימוד לרפואת חולה`,
     desc: 'סגולת הבן איש חי לרפואת חולה: חמישה קטעי קל וחומר והבקשה שאחריהם, בנוסח לשון חכמים. עמוד אחד, מנוקד, מתאים להדפסה ולקריאה בחושך.',
     bodyClass: 'pray',
     body
@@ -284,8 +284,8 @@ ${expandFor(it.id)}
     return `        <tr${open ? ' class="is-open"' : ''}>
           <td class="n">${r.n}</td>
           <td class="derash">${html(r.derash)}</td>
-          <td class="rach">${r.rachamim ? html(r.rachamim) : '<span class="dash">—</span>'}</td>
-          <td>${r.explanation ? esc(r.explanation) : '<span class="dash">—</span>'}</td>
+          <td class="rach">${r.rachamim ? html(r.rachamim) : '<span class="dash">-</span>'}</td>
+          <td>${r.explanation ? esc(r.explanation) : '<span class="dash">-</span>'}</td>
           <td class="src src--${r.source.kind}">${r.source.url
             ? `<a href="${esc(r.source.url)}" target="_blank" rel="noopener noreferrer">${esc(r.source.text)} ↗</a>`
             : esc(r.source.text)}</td>
@@ -391,7 +391,7 @@ ${join(s.colophon.lines, (l) => `      <p>${html(l)}</p>`)}
 </main>`;
 
   return page({
-    title: `להבין — ${texts.meta.titlePlain}`,
+    title: `להבין - ${texts.meta.titlePlain}`,
     desc: 'שרשרת המסירה מן המגיד ממעזריטש דרך הבני יששכר עד הבן איש חי, טבלת י״ג מידות הדרשה מול י״ג מידות הרחמים, ופירוק הלוגיקה של כל אחד מחמשת הקטעים.',
     base: '../',
     body
