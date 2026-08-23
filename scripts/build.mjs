@@ -143,7 +143,7 @@ function renderPray() {
           <span class="num" aria-hidden="true">${p.n}</span>
           <h3 class="passage__label">${esc(p.label)}</h3>
           <p class="passage__lead">${esc(p.lead)}</p>
-          <p class="passage__ref" data-ref-for="${esc(p.id)}">${esc(p.ref)}</p>
+          <p class="passage__ref">${esc(p.ref)}</p>
         </header>
         <div class="text">
 ${join(p.lines, (l) => `          <p>${html(l)}</p>`)}
