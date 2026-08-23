@@ -135,7 +135,7 @@ const hebrewRef = (r) => refParts(r)?.he || null;
 const hebrewLoc = (r) => refParts(r)?.loc || null;
 
 /* מקורות שאינם חלק מהאיסוף, אבל שימושי לסקור אותם (--probe) */
-const PROBE_EXTRA = ['Gittin.16b.16', 'Gittin.16b.17', 'Gittin.16b.18'];
+const PROBE_EXTRA = ['Gittin.17a.1', 'Gittin.17a.2', 'Gittin.17a.3'];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const norm = (s) => String(s)
