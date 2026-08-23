@@ -53,20 +53,24 @@ const VOICES = [
 /* ── שמות בעברית ───────────────────────────────────────────────────
    ספריא לא מחזירה heRef בתשובת הקישורים, אז ממירים בעצמנו.
    כל מה שלא מזוהה נשאר באנגלית — עדיף מאשר לנחש.               */
-const BOOKS = {
+const TRACTATES = {
   Berakhot: 'ברכות', Pesachim: 'פסחים', Chagigah: 'חגיגה', Chullin: 'חולין',
-  'Bava Kamma': 'בבא קמא', Negaim: 'נגעים',
+  'Bava Kamma': 'בבא קמא', Negaim: 'נגעים'
+};
+const SCRIPTURE = {
   Genesis: 'בראשית', Exodus: 'שמות', Leviticus: 'ויקרא', Numbers: 'במדבר',
   Deuteronomy: 'דברים', Hosea: 'הושע', Psalms: 'תהלים', Proverbs: 'משלי',
   'Song of Songs': 'שיר השירים', Isaiah: 'ישעיהו', Jeremiah: 'ירמיהו'
 };
+const BOOKS = { ...TRACTATES, ...SCRIPTURE };
 const WRITERS = [
+  [/^Steinsaltz on /, 'ביאור שטיינזלץ'],
   [/^Rashi on /, 'רש״י'], [/^Bartenura on /, 'ברטנורא'],
   [/^Tosafot Yom Tov on /, 'תוספות יום טוב'], [/^Rambam on Mishnah /, 'רמב״ם'],
   [/^Tosafot on /, 'תוספות'], [/^Chidushei Agadot on /, 'מהרש״א'],
   [/^Chidushei Halachot on /, 'מהרש״א'], [/^Mishnah /, 'משנה']
 ];
-const TANAKH = new RegExp('on (' + Object.keys(BOOKS).join('|') + ')\\b');
+const TANAKH = new RegExp('on (' + Object.keys(SCRIPTURE).join('|') + ')\\b');
 
 /* מספר לאותיות */
 function gim(n) {
