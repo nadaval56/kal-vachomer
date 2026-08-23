@@ -224,8 +224,8 @@ ${join(t.footer.lines, (l) => `      <p>${html(l)}</p>`)}
 </main>`;
 
   return page({
-    title: `${texts.meta.titlePlain} - לימוד לרפואת חולה`,
-    desc: 'סגולת הבן איש חי לרפואת חולה: חמישה קטעי קל וחומר והבקשה שאחריהם, בנוסח לשון חכמים. עמוד אחד, מנוקד, מתאים להדפסה ולקריאה בחושך.',
+    title: texts.meta.share.title,
+    desc: texts.meta.share.desc,
     bodyClass: 'pray',
     body
   });
