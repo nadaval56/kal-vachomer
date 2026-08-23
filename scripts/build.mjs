@@ -267,7 +267,7 @@ ${join(lines, (l) => `            <p class="prose prose--quote">${html(l)}</p>`)
 
   /* ── א ── */
   const inst = s.instructions;
-  const partA = part({ n: inst.n, title: inst.title, lead: inst.lead, open: true, body:
+  const partA = part({ n: inst.n, title: inst.title, lead: inst.lead, body:
     join(inst.items, (it) => `        <section class="instr">
           <p class="kicker">${esc(it.kicker)}</p>
 ${it.quote ? quote([it.quote], it.source) : ''}
