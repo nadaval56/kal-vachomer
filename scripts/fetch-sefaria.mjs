@@ -21,15 +21,23 @@ const VERBOSE = process.argv.includes('--verbose');
 const API = 'https://www.sefaria.org/api';
 
 /* לכל קטע באתר: הרפרנסים בספריא, ומחרוזת לאיתור הקטע המדויק בתוכם */
+/* ליקוט. ספריא מחזירה את כל מה שתלוי בקטע, ולא הכול נוגע ללימוד שלנו.
+   drop — מפרש שיורד כולו. keep — אילו פריטים נשארים (מדד, שלילי = מהסוף).
+   מוחל אחרי התקרה של VOICES, כדי שהמדדים יהיו יציבים.               */
 const SOURCES = [
   {
     id: 'chullin',
+    curate: { drop: ['tosafot_yt', 'rambam_m'] },
     refs: [
       { ref: 'Mishnah_Chullin.12.5' },
       { ref: 'Chullin.142a', anchors: ['מצוה קלה', 'כאיסר', 'למען ייטב לך'] }
     ]
   },
-  { id: 'negaim',  refs: [{ ref: 'Mishnah_Negaim.12.5' }] },
+  {
+    id: 'negaim',
+    curate: { drop: ['rashi', 'tosafot_yt'], keep: { bartenura: [2], rambam_m: [-1] } },
+    refs: [{ ref: 'Mishnah_Negaim.12.5' }]
+  },
   { id: 'chagiga', refs: [{ ref: 'Chagigah.27a', anchors: ['מזבח הזהב', 'פושעי ישראל', 'רקתך'] }] },
   { id: 'pesachim', refs: [
       { ref: 'Pesachim.87b', anchors: ['שאשתך זונה', 'בני בחוני', 'קנינין'] },
@@ -257,11 +265,19 @@ for (const src of SOURCES) {
       console.log(`   ${refSpec.ref} — נכשל: ${err.message}`);
     }
   }
-  /* סדר תצוגה קבוע + תקרה לכל מפרש */
+  /* סדר תצוגה קבוע, תקרה לכל מפרש, ואז ליקוט */
+  const cur = src.curate || {};
   const ordered = {};
   for (const v of VOICES) {
     if (!merged[v.key]?.items.length) continue;
-    ordered[v.key] = { he: merged[v.key].he, items: merged[v.key].items.slice(0, v.max || 2) };
+    if (cur.drop?.includes(v.key)) { console.log(`   ${src.id}: ${merged[v.key].he} — הורד בליקוט`); continue; }
+    let items = merged[v.key].items.slice(0, v.max || 2);
+    const pick = cur.keep?.[v.key];
+    if (pick) {
+      items = pick.map((i) => items.at(i)).filter(Boolean);
+      console.log(`   ${src.id}: ${merged[v.key].he} — נשמרו ${items.length} מתוך ${merged[v.key].items.length}`);
+    }
+    if (items.length) ordered[v.key] = { he: merged[v.key].he, items };
   }
   const n = Object.values(ordered).reduce((a, g) => a + g.items.length, 0);
   if (n) { result.passages[src.id] = ordered; ok++; }
