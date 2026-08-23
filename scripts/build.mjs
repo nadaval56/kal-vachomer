@@ -23,6 +23,7 @@ const stamp = (rel) => {
   } catch { return rel; }
 };
 const CSS = stamp('assets/style.css');
+const OG = new URL(stamp('assets/og.png'), texts.meta.siteUrl).href;
 const JS = stamp('assets/app.js');
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -90,6 +91,11 @@ function page({ title, desc, base = '', bodyClass = '', body }) {
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:locale" content="he_IL">
+<meta property="og:image" content="${OG}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="${esc(texts.meta.share.imageAlt)}">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="${base}${CSS}">
 <link rel="preload" as="font" type="font/woff2" href="${base}assets/fonts/assistant-hebrew-400-normal.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="${base}assets/fonts/assistant-hebrew-600-normal.woff2" crossorigin>
