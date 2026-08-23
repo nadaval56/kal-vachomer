@@ -57,14 +57,19 @@ const SOURCES = [
       ref: 'Berakhot.5a',
       anchors: ['שן ועין', 'ממרקין', 'תיסרנו'],
       steinSpan: { from: ['מה תלמוד לומר ומתורתך', 'אל תקרי'], to: ['שן ועין', 'ממרקין'] }
+    }, {
+      /* "אשרי הגבר אשר תיסרנו" תלוי בקטע הקודם. משם רק הפסוק. */
+      ref: 'Berakhot.5a',
+      anchors: ['מה תלמוד לומר ומתורתך', 'אל תקרי'],
+      only: ['psukim']
     }]
   }
 ];
 
 /* מי נכנס, ובאיזה סדר יוצג */
 const VOICES = [
+  { key: 'psukim',    he: 'הפסוקים',          max: 3, category: 'Tanakh' },
   { key: 'steinsaltz', he: 'ביאור שטיינזלץ',  max: 1, title: /steinsaltz|שטיינזלץ/i },
-  { key: 'psukim',    he: 'הפסוקים',          max: 2, category: 'Tanakh' },
   { key: 'rashi',     he: 'רש״י',             max: 3, title: /^rashi on |^רש"י על/i },
   { key: 'bartenura', he: 'ברטנורא',          max: 3, title: /^bartenura on /i },
   { key: 'tosafot_yt', he: 'תוספות יום טוב',  max: 3, title: /^tosafot yom tov on /i },
@@ -107,8 +112,8 @@ function gim(n) {
 }
 const quote = (t) => t.length > 1 ? t.slice(0, -1) + '״' + t.slice(-1) : t + '׳';
 
-/* "Rashi on Chagigah 27a:1:1" → "רש״י, חגיגה כ״ז ע״א" */
-function hebrewRef(ref) {
+/* "Rashi on Chagigah 27a:1:1" → {he:"רש״י, חגיגה כ״ז ע״א", loc:"חגיגה כ״ז ע״א"} */
+function refParts(ref) {
   if (!ref) return null;
   const raw = String(ref).replace(/[_.]/g, ' ');
   let writer = null, rest = raw;
@@ -120,11 +125,14 @@ function hebrewRef(ref) {
   if (!m) return null;
   const book = BOOKS[m[1].trim()];
   if (!book) return null;
-  let loc = m[3]
+  const where = m[3]
     ? `${quote(gim(+m[2]))} ${m[3] === 'a' ? 'ע״א' : 'ע״ב'}`
     : `${quote(gim(+m[2]))}${m[4] ? ', ' + gim(+m[4]) : ''}`;
-  return `${writer ? writer + ', ' : ''}${book} ${loc}`;
+  const loc = `${book} ${where}`;
+  return { he: `${writer ? writer + ', ' : ''}${loc}`, loc };
 }
+const hebrewRef = (r) => refParts(r)?.he || null;
+const hebrewLoc = (r) => refParts(r)?.loc || null;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const norm = (s) => String(s)
@@ -228,7 +236,7 @@ async function collect(refSpec) {
   if (stein) {
     const segIdx = anchors ? Number(target.split('.').pop()) - 1 : 0;
     const txt = clean(stein.segments[segIdx] || (anchors ? '' : stein.segments.join(' ')));
-    if (txt.length > 12) out.steinsaltz = { he: 'ביאור שטיינזלץ', items: [{ ref: target, heRef: hebrewRef(target), url: sefariaUrl(target), text: txt }] };
+    if (txt.length > 12) out.steinsaltz = { he: 'ביאור שטיינזלץ', items: [{ ref: target, heRef: hebrewRef(target), loc: hebrewLoc(target), url: sefariaUrl(target), text: txt }] };
   }
 
   /* שם החיבור שאנו עומדים בו — פירוש על מסכת אחרת הוא הפניה, לא פירוש */
@@ -252,7 +260,7 @@ async function collect(refSpec) {
             if (txt.length < 12) continue;
             (out.steinsaltz ||= { he: 'ביאור שטיינזלץ', items: [] });
             if (!out.steinsaltz.items.some((x) => x.ref === l.ref)) {
-              out.steinsaltz.items.push({ ref: l.ref, heRef: hebrewRef(l.ref), url: sefariaUrl(l.ref), text: txt });
+              out.steinsaltz.items.push({ ref: l.ref, heRef: hebrewRef(l.ref), loc: hebrewLoc(l.ref), url: sefariaUrl(l.ref), text: txt });
             }
           }
           await sleep(300);
@@ -268,6 +276,7 @@ async function collect(refSpec) {
       (v.title && v.title.test(title)) ||
       (v.category && link.category === v.category));
     if (!voice) continue;
+    if (refSpec.only && !refSpec.only.includes(voice.key)) continue;
     /* מתקבל: פסוקים, פירוש על החיבור שלפנינו, או פירוש על פסוק שהוא מצטט */
     const relevant = link.category === 'Tanakh' || title.includes(baseBook) || TANAKH.test(title);
     if (!relevant) { if (VERBOSE) console.log(`      נדחה כלא שייך: ${link.ref}`); continue; }
@@ -276,7 +285,7 @@ async function collect(refSpec) {
     if (text.length < 8) continue;
     (out[voice.key] ||= { he: voice.he, items: [] });
     if (out[voice.key].items.some((i) => i.ref === link.ref)) continue;
-    out[voice.key].items.push({ ref: link.ref, heRef: link.heRef || hebrewRef(link.ref), url: sefariaUrl(link.ref), text });
+    out[voice.key].items.push({ ref: link.ref, heRef: link.heRef || hebrewRef(link.ref), loc: hebrewLoc(link.ref) || link.heRef || link.ref, url: sefariaUrl(link.ref), text });
   }
   return out;
 }
