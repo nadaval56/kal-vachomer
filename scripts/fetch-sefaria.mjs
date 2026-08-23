@@ -18,6 +18,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'data/commentary.json');
 const DRY = process.argv.includes('--dry');
 const VERBOSE = process.argv.includes('--verbose');
+const PROBE = process.argv.includes('--probe');
 const API = 'https://www.sefaria.org/api';
 
 /* לכל קטע באתר: הרפרנסים בספריא, ומחרוזת לאיתור הקטע המדויק בתוכם */
@@ -130,6 +131,7 @@ function clean(html) {
     .replace(/\*\([^)]*\)/g, '')      /* הערות נוסח של ספריא בתוך הפסוק */
     .replace(/[\u0591-\u05AF\u05BD]/g, '')  /* טעמי מקרא — הגופן שבאתר בלעדיהם */
     .replace(/^[א-ת] (?=\S)/, '')     /* אות סימון קטע של ספריא */
+    .replace(/[\u2014\u2013]/g, '-')  /* רק מקפים קצרים באתר */
     .replace(/\s+([,.;:])/g, '$1')
     .replace(/\s+/g, ' ')
     .trim();
@@ -246,6 +248,25 @@ function mergeInto(dst, src) {
     }
   }
   return dst;
+}
+
+if (PROBE) {
+  const seen = new Set();
+  for (const src of SOURCES) {
+    for (const { ref } of src.refs) {
+      if (seen.has(ref)) continue;
+      seen.add(ref);
+      console.log(`\n══ ${ref} ══`);
+      try {
+        for (const v of await segmentsFor(ref)) {
+          console.log(`  גרסה: ${v.title} (${v.segments.length} קטעים)`);
+          v.segments.forEach((seg, i) => console.log(`   [${i + 1}] ${norm(seg).slice(0, 110)}`));
+        }
+      } catch (err) { console.log(`  נכשל: ${err.message}`); }
+      await sleep(400);
+    }
+  }
+  process.exit(0);
 }
 
 const result = {
