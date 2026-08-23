@@ -139,12 +139,12 @@ function renderPray() {
 
   const passages = join(t.passages, (p) => `
       <article class="passage" id="p-${esc(p.id)}">
-        <div class="passage__head">
+        <header class="passage__head">
           <span class="num" aria-hidden="true">${p.n}</span>
           <h3 class="passage__label">${esc(p.label)}</h3>
-          <span class="passage__ref" data-ref-for="${esc(p.id)}">${esc(p.ref)}</span>
-        </div>
-        <p class="passage__lead">${esc(p.lead)}</p>
+          <p class="passage__lead">${esc(p.lead)}</p>
+          <p class="passage__ref" data-ref-for="${esc(p.id)}">${esc(p.ref)}</p>
+        </header>
         <div class="text">
 ${join(p.lines, (l) => `          <p>${html(l)}</p>`)}
         </div>
