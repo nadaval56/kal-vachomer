@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://nadaval56.github.io/kal-vachomer/sitemap.xml
+Sitemap: https://kal-vachomer.co.il/sitemap.xml
