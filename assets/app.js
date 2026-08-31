@@ -162,6 +162,21 @@
     sync();
   });
 
+  /* ── גובה הכותרת העליונה ─────────────────────────────────────
+     הכותרת גדלה עם מדרגת הגופן ויכולה לגלוש לשתי שורות, כך שכל
+     מספר קבוע בגיליון הסגנון נעשה שגוי ברגע שמישהו מגדיל את
+     הטקסט: עוגן היה נוחת מתחת לפס, ופס הצד היה נדבק גבוה מדי.
+     נמדד ומתפרסם כמשתנה CSS.                                     */
+  var bar = document.querySelector('.topbar');
+  if (bar) {
+    var publish = function () {
+      root.style.setProperty('--topbar-h', Math.round(bar.getBoundingClientRect().height) + 'px');
+    };
+    publish();
+    if (window.ResizeObserver) new ResizeObserver(publish).observe(bar);
+    else window.addEventListener('resize', publish);
+  }
+
   /* ── קפיצה אל פרק סגור ────────────────────────────────────────
      details סגור הוא תוכן שאינו קיים בעמוד: הדפדפן יגלול אל
      הכותרת ולא יפתח כלום, והקישור ייראה שבור. לכן פותחים.        */
