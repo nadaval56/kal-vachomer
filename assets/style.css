@@ -136,9 +136,27 @@ strong{font-weight:700}
 .brand span{color:var(--ink-3);font-weight:400}
 .topbar__sp{flex:1}
 .tools{display:flex;align-items:center;flex-wrap:wrap;gap:.3rem}
+/* הקבוצות שקופות בברירת מחדל: display:contents מוציא אותן מהפריסה
+   והפקדים חוזרים להיות ילדים ישירים של .tools, כלומר שורה אחת
+   בדיוק כמו קודם. הן מתגלמות רק בטלפון, כשלושת אזורי הפס. */
+.tools__grp{display:contents}
+/* ── הפס בטלפון ────────────────────────────────────────────────
+   שלושה אזורים: גודל הטקסט בהתחלה, מצב לילה במרכז, המעבר בין
+   הלימוד להעמקה בסוף. שם האתר יורד כאן - הוא ושישה פקדים לא
+   נכנסים בשורה אחת, וירידה לשתי שורות אוכלת גובה מסך יקר.
+   שום ניווט לא הולך לאיבוד: כפתור הסוף מוביל תמיד לעמוד השני,
+   והכותרת הראשית שמתחת אומרת ממילא היכן אנחנו.               */
+@media (max-width:560px){
+  .brand,.topbar__sp{display:none}
+  .topbar__in{gap:.4rem;min-height:50px;flex-wrap:nowrap}
+  .tools{flex:1;width:100%;display:grid;grid-template-columns:1fr auto 1fr;
+    align-items:center;gap:.3rem}
+  .tools__grp{display:flex;align-items:center;gap:.3rem;min-width:0}
+  .tools__start{justify-self:start}
+  .tools__mid{justify-self:center}
+  .tools__end{justify-self:end}
+}
 @media (max-width:460px){
-  .topbar__in{gap:.4rem;min-height:50px}
-  .brand span{display:none}
   .btn{padding:.45rem .5rem}
   .sizes .btn{padding:.45rem .42rem}
 }
@@ -148,8 +166,7 @@ strong{font-weight:700}
 @media (max-width:360px){
   .topbar .wrap{padding-inline:.7rem}   /* רק הכותרת מתקרבת לשוליים; הטקסט לא */
   .topbar__in{gap:.3rem}
-  .brand{font-size:.74rem}
-  .tools{gap:.1rem}
+  .tools,.tools__grp{gap:.1rem}
   .btn{padding:.42rem .34rem;gap:.25rem}
   .sizes .btn{padding:.42rem .3rem}
   .btn--ghost{padding:.42rem .48rem}

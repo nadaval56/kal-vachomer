@@ -165,15 +165,21 @@ function topbar({ base = '', here }) {
   <div class="wrap topbar__in">
     <a class="brand" href="${base || './'}">סגולת הקל וחומר${crumb ? `<span> · ${esc(crumb)}</span>` : ''}</a>
     <div class="topbar__sp"></div>
+    <!-- שלוש קבוצות. בדסקטופ הן שקופות (display:contents) והפקדים
+         יושבים בשורה אחת כמו קודם; בטלפון הן שלושת האזורים של הפס. -->
     <div class="tools">
-      ${here === 'pray' ? `<button class="btn" type="button" data-print title="הדפסה">${ico.print}<span class="sr">הדפסה</span></button>` : ''}
-      <div class="sizes" role="group" aria-label="גודל טקסט">
-        <button class="btn" type="button" data-size-btn="1" title="קטן"><span aria-hidden="true" style="font-size:.78rem">א</span><span class="sr">גופן קטן</span></button>
-        <button class="btn" type="button" data-size-btn="2" title="בינוני"><span aria-hidden="true" style="font-size:.95rem">א</span><span class="sr">גופן בינוני</span></button>
-        <button class="btn" type="button" data-size-btn="3" title="גדול"><span aria-hidden="true" style="font-size:1.15rem">א</span><span class="sr">גופן גדול</span></button>
+      <div class="tools__grp tools__start">
+        ${here === 'pray' ? `<button class="btn" type="button" data-print title="הדפסה">${ico.print}<span class="sr">הדפסה</span></button>` : ''}
+        <div class="sizes" role="group" aria-label="גודל טקסט">
+          <button class="btn" type="button" data-size-btn="1" title="קטן"><span aria-hidden="true" style="font-size:.78rem">א</span><span class="sr">גופן קטן</span></button>
+          <button class="btn" type="button" data-size-btn="2" title="בינוני"><span aria-hidden="true" style="font-size:.95rem">א</span><span class="sr">גופן בינוני</span></button>
+          <button class="btn" type="button" data-size-btn="3" title="גדול"><span aria-hidden="true" style="font-size:1.15rem">א</span><span class="sr">גופן גדול</span></button>
+        </div>
       </div>
-      <button class="btn" type="button" data-theme-btn aria-pressed="false" title="מצב לילה">${ico.moon}<span class="sr" data-theme-label>מצב לילה</span></button>
-      ${other}
+      <div class="tools__grp tools__mid">
+        <button class="btn" type="button" data-theme-btn aria-pressed="false" title="מצב לילה">${ico.moon}<span class="sr" data-theme-label>מצב לילה</span></button>
+      </div>
+      <div class="tools__grp tools__end">${other}</div>
     </div>
   </div>
 </header>`;

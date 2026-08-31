@@ -20,7 +20,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="סגולת הקל וחומר - לימוד ותפילה לרפואה">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="../assets/style.css?v=1f7e3a66">
+<link rel="stylesheet" href="../assets/style.css?v=e8c037c3">
 <link rel="preload" as="font" type="font/woff2" href="../assets/fonts/assistant-hebrew-400-normal.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="../assets/fonts/assistant-hebrew-600-normal.woff2" crossorigin>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233B6675'/%3E%3Cpath d='M11 22V10m0 6h10m0-6v12' stroke='%23FAF9F6' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
@@ -39,15 +39,21 @@ var t=d.getItem('kv:theme');if(t==='night'||t==='day')r.setAttribute('data-theme
   <div class="wrap topbar__in">
     <a class="brand" href="../">סגולת הקל וחומר<span> · מדיניות פרטיות</span></a>
     <div class="topbar__sp"></div>
+    <!-- שלוש קבוצות. בדסקטופ הן שקופות (display:contents) והפקדים
+         יושבים בשורה אחת כמו קודם; בטלפון הן שלושת האזורים של הפס. -->
     <div class="tools">
-      
-      <div class="sizes" role="group" aria-label="גודל טקסט">
-        <button class="btn" type="button" data-size-btn="1" title="קטן"><span aria-hidden="true" style="font-size:.78rem">א</span><span class="sr">גופן קטן</span></button>
-        <button class="btn" type="button" data-size-btn="2" title="בינוני"><span aria-hidden="true" style="font-size:.95rem">א</span><span class="sr">גופן בינוני</span></button>
-        <button class="btn" type="button" data-size-btn="3" title="גדול"><span aria-hidden="true" style="font-size:1.15rem">א</span><span class="sr">גופן גדול</span></button>
+      <div class="tools__grp tools__start">
+        
+        <div class="sizes" role="group" aria-label="גודל טקסט">
+          <button class="btn" type="button" data-size-btn="1" title="קטן"><span aria-hidden="true" style="font-size:.78rem">א</span><span class="sr">גופן קטן</span></button>
+          <button class="btn" type="button" data-size-btn="2" title="בינוני"><span aria-hidden="true" style="font-size:.95rem">א</span><span class="sr">גופן בינוני</span></button>
+          <button class="btn" type="button" data-size-btn="3" title="גדול"><span aria-hidden="true" style="font-size:1.15rem">א</span><span class="sr">גופן גדול</span></button>
+        </div>
       </div>
-      <button class="btn" type="button" data-theme-btn aria-pressed="false" title="מצב לילה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg><span class="sr" data-theme-label>מצב לילה</span></button>
-      <a class="btn btn--ghost" href="../">להתפלל</a>
+      <div class="tools__grp tools__mid">
+        <button class="btn" type="button" data-theme-btn aria-pressed="false" title="מצב לילה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg><span class="sr" data-theme-label>מצב לילה</span></button>
+      </div>
+      <div class="tools__grp tools__end"><a class="btn btn--ghost" href="../">להתפלל</a></div>
     </div>
   </div>
 </header>
