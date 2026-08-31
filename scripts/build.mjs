@@ -12,6 +12,7 @@ const read = (p) => JSON.parse(readFileSync(resolve(ROOT, p), 'utf8'));
 
 const texts = read('data/texts.json');
 const study = read('data/study.json');
+const legal = read('data/legal.json');
 const commentary = (() => { try { return read('data/commentary.json'); } catch { return { refs: {} }; } })();
 
 /* חתימת תוכן על הנכסים. בלעדיה דפדפן שכבר ביקר באתר מקבל CSS ישן
@@ -119,13 +120,50 @@ ${body}
 `;
 }
 
+/* ── תוכן עניינים ────────────────────────────────────────────────
+   מוצג רק במסך רחב, שם ממילא יש מקום פנוי משני צדי עמודת הקריאה.
+   הסימון של החלק הנוכחי נעשה ב-app.js.                          */
+function toc(title, items) {
+  return `    <nav class="toc no-print" aria-labelledby="toc-h">
+      <div class="toc__in">
+        <p class="toc__h" id="toc-h">${esc(title)}</p>
+        <ol class="toc__list">
+${join(items, (it) => `          <li><a href="#${esc(it.id)}">${it.n ? `<span class="toc__n" aria-hidden="true">${esc(it.n)}</span>` : ''}<span>${esc(it.label)}</span></a></li>`)}
+        </ol>
+      </div>
+    </nav>`;
+}
+
+/* ── תחתית ───────────────────────────────────────────────────────
+   הקישורים לנגישות ולפרטיות יושבים בכל עמוד: הצהרת נגישות שאי
+   אפשר להגיע אליה מכל מקום אינה שווה הרבה.                      */
+function foot({ base = '', here }) {
+  const link = (href, label) => `<a href="${href}">${esc(label)}</a>`;
+  const nav = [
+    here === 'pray' ? null : link(`${base}`, 'הלימוד והתפילה'),
+    here === 'study' ? null : link(`${base}study/`, 'העמקה'),
+    here === 'accessibility' ? null : link(`${base}${legal.accessibility.slug}`, legal.accessibility.navLabel),
+    here === 'privacy' ? null : link(`${base}${legal.privacy.slug}`, legal.privacy.navLabel)
+  ].filter(Boolean).join('\n        ');
+
+  return `  <footer class="foot">
+    <div class="wrap">
+      <nav class="foot__nav no-print" aria-label="קישורי האתר">
+        ${nav}
+      </nav>
+${join(texts.footer.lines, (l) => `      <p>${html(l)}</p>`)}
+    </div>
+  </footer>`;
+}
+
 function topbar({ base = '', here }) {
   const other = here === 'pray'
     ? `<a class="btn btn--ghost" href="${base}study/">העמקה</a>`
     : `<a class="btn btn--ghost" href="${base}">להתפלל</a>`;
+  const crumb = { study: 'העמקה', accessibility: legal.accessibility.title, privacy: legal.privacy.title }[here];
   return `<header class="topbar no-print">
   <div class="wrap topbar__in">
-    <a class="brand" href="${base || './'}">סגולת הקל וחומר${here === 'pray' ? '' : '<span> · העמקה</span>'}</a>
+    <a class="brand" href="${base || './'}">סגולת הקל וחומר${crumb ? `<span> · ${esc(crumb)}</span>` : ''}</a>
     <div class="topbar__sp"></div>
     <div class="tools">
       ${here === 'pray' ? `<button class="btn" type="button" data-print title="הדפסה">${ico.print}<span class="sr">הדפסה</span></button>` : ''}
@@ -165,10 +203,16 @@ ${join(t.request[key], (l) => `          <p>${html(l)}</p>`)}
 ${key === 'female' ? `          <p class="note" style="margin-top:.4rem">${esc(t.request.femaleNote)}</p>` : ''}
         </div>`;
 
+  const tocItems = t.passages
+    .map((p) => ({ id: `p-${p.id}`, n: p.n, label: p.label }))
+    .concat([{ id: 'request', label: t.request.title }]);
+
   const body = `
 ${topbar({ here: 'pray' })}
 <main id="main">
-  <div class="wrap">
+  <div class="wrap wrap--rail">
+
+${toc('בעמוד הזה', tocItems)}
 
     <section class="hero">
       <p class="hero__kicker">${esc(t.meta.source)}</p>
@@ -182,7 +226,7 @@ ${join(t.intro.lines, (l) => `        <p>${html(l)}</p>`)}
 
     <section class="section no-print" aria-labelledby="name-h">
       <div class="card namebox">
-        <h3 id="name-h">${esc(t.namePrompt.title)}</h3>
+        <h2 id="name-h">${esc(t.namePrompt.title)}</h2>
         <div class="fields">
           <div class="field">
             <label for="patient-name">${esc(t.namePrompt.fieldName)}</label>
@@ -214,7 +258,7 @@ ${join(t.intro.lines, (l) => `        <p>${html(l)}</p>`)}
       </div>
     </section>
 
-    <section class="section" aria-labelledby="req-h">
+    <section class="section" id="request" aria-labelledby="req-h">
       <div class="eyebrow"><h2 id="req-h">${esc(t.request.title)}</h2></div>
       <p class="request-lead">${html(t.requestLead)}</p>
       <div class="passage request">
@@ -225,11 +269,7 @@ ${reqVariant('female')}
 
   </div>
 
-  <footer class="foot">
-    <div class="wrap">
-${join(t.footer.lines, (l) => `      <p>${html(l)}</p>`)}
-    </div>
-  </footer>
+${foot({ here: 'pray' })}
 </main>`;
 
   const site = new URL('', texts.meta.siteUrl).href;
@@ -352,10 +392,14 @@ ${join(idea.list, (x, i) => `              <li${i < 3 ? ' class="is-paired"' : '
     prose(om.explain.slice(2))
   ].join('\n') });
 
+  const tocItems = [inst, idea, demo, om].map((x) => ({ id: `part-${x.n}`, n: x.n, label: x.title }));
+
   const body = `
 ${topbar({ base: '../', here: 'study' })}
 <main id="main" class="study">
-  <div class="wrap">
+  <div class="wrap wrap--rail">
+
+${toc('ארבעת החלקים', tocItems)}
 
     <section class="hero">
       <p class="hero__kicker">${esc(texts.meta.source)}</p>
@@ -373,12 +417,7 @@ ${partD}
 
   </div>
 
-  <footer class="foot">
-    <div class="wrap">
-      <div class="foot__nav no-print"><a href="../">חזרה ללימוד ולתפילה</a></div>
-${join(texts.footer.lines, (l) => `      <p>${html(l)}</p>`)}
-    </div>
-  </footer>
+${foot({ base: '../', here: 'study' })}
 </main>`;
 
   const site = new URL('', texts.meta.siteUrl).href;
@@ -389,6 +428,7 @@ ${join(texts.footer.lines, (l) => `      <p>${html(l)}</p>`)}
     desc,
     base: '../',
     path: 'study/',
+    bodyClass: 'study',
     body,
     jsonld: {
       '@context': 'https://schema.org',
@@ -403,12 +443,74 @@ ${join(texts.footer.lines, (l) => `      <p>${html(l)}</p>`)}
   });
 }
 
+/* ══ נגישות ופרטיות ═════════════════════════════════════════════
+   שני עמודי טקסט רצוף מאותו תבנית. עמודה אחת, בלי פס צד: אין כאן
+   לאן לקפוץ, וזה מה שקוראים מלמעלה למטה.                        */
+function renderLegal(key) {
+  const d = legal[key];
+  const mail = legal.contact.email;
+
+  const contactBlock = `        <p class="prose"><strong>${esc(legal.contact.label)}:</strong> <a href="mailto:${esc(mail)}">${esc(mail)}</a></p>`;
+
+  const section = (s) => [
+    `        <h2>${esc(s.h)}</h2>`,
+    join(s.p, (l) => `        <p class="prose">${html(l)}</p>`),
+    s.list ? `        <ul>\n${join(s.list, (l) => `          <li>${html(l)}</li>`)}\n        </ul>` : '',
+    join(s.after, (l) => `        <p class="prose" style="margin-top:.9rem">${html(l)}</p>`),
+    s.contact ? contactBlock : ''
+  ].filter(Boolean).join('\n');
+
+  const body = `
+${topbar({ base: '../', here: key })}
+<main id="main">
+  <div class="wrap">
+
+    <section class="hero">
+      <p class="hero__kicker">${esc(texts.meta.titlePlain)}</p>
+      <h1>${esc(d.title)}</h1>
+      <p class="hero__sub">${esc(d.subtitle)}</p>
+      <div class="hero__rule"></div>
+    </section>
+
+    <section class="section">
+${join(d.sections, section)}
+      <p class="note legal__updated">העמוד עודכן ב-${esc(d.updated)}.</p>
+    </section>
+
+  </div>
+
+${foot({ base: '../', here: key })}
+</main>`;
+
+  const site = new URL('', texts.meta.siteUrl).href;
+  const url = new URL(d.slug, texts.meta.siteUrl).href;
+  const title = `${d.title} - ${texts.meta.titlePlain}`;
+  return page({
+    title,
+    desc: d.desc,
+    base: '../',
+    path: d.slug,
+    bodyClass: 'legal',
+    body,
+    jsonld: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      '@id': url,
+      url,
+      name: title,
+      description: d.desc,
+      inLanguage: 'he',
+      isPartOf: { '@id': `${site}#website` }
+    }
+  });
+}
+
 /* ── robots + sitemap ──────────────────────────────────────────
    מה שאין לו נתיב מוצהר, מנוע חיפוש צריך לנחש. שני הקבצים נוצרים
    מ־siteUrl כדי שלא ייווצר פער בין הכתובת שבמטא לכתובת שבמפה.
    בלי lastmod: תאריך שמשתנה בכל build הוא רעש בהיסטוריה, וגוגל
    ממילא הולך אחרי מה שהוא רואה בעמוד.                           */
-const PAGES = ['', 'study/'];
+const PAGES = ['', 'study/', legal.accessibility.slug, legal.privacy.slug];
 const abs = (rel) => new URL(rel, texts.meta.siteUrl).href;
 
 const sitemap = () => `<?xml version="1.0" encoding="UTF-8"?>
@@ -430,6 +532,8 @@ Sitemap: ${abs('sitemap.xml')}
 const out = [
   ['index.html', renderPray()],
   ['study/index.html', renderStudy()],
+  [`${legal.accessibility.slug}index.html`, renderLegal('accessibility')],
+  [`${legal.privacy.slug}index.html`, renderLegal('privacy')],
   ['sitemap.xml', sitemap()],
   ['robots.txt', robots()]
 ];

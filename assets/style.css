@@ -27,26 +27,41 @@
   --font-verse:var(--font-text);
   --font-ui:var(--font-text);
 
+  /* ניגודיות: כל צבע טקסט כאן עומד ב-4.5:1 מול כל אחד מרקעי האתר,
+     וגם --line-3 (מסגרות של פקדים) עומד ב-3:1. מי שמכהה או מבהיר
+     כאן משהו - שיריץ שוב את החישוב, לא את העין.                   */
   --paper:#FAF9F6;   --surface:#FFFFFF;  --surface-2:#F4F2EC;
-  --ink:#16181B;     --ink-2:#4B515A;    --ink-3:#878E98;
-  --line:#E7E3DA;    --line-2:#D6D0C4;
+  --ink:#16181B;     --ink-2:#4B515A;    --ink-3:#666C75;
+  --line:#E7E3DA;    --line-2:#D6D0C4;   --line-3:#928C79;
   --accent:#3B6675;  --accent-wash:#ECF2F4;
-  --brass:#9A7639;   --brass-wash:#F5EEE0;
+  --brass:#856429;   --brass-wash:#F5EEE0;
   --shadow:0 1px 2px rgb(20 24 28 / .04), 0 14px 34px -26px rgb(20 24 28 / .30);
 
   --fs:19px;          /* מדרגת גופן — נשלטת מ־data-size */
-  --measure:34rem;
   --lh:1.95;
   --radius:16px;
+
+  /* ── רוחב ──────────────────────────────────────────────────────
+     --measure הוא עמודת הקריאה, והוא נגזר מגודל הגופן: כשהאות
+     גדלה השורה מתרחבת איתה ומספר התווים בשורה נשמר. קודם הוא היה
+     נתון ב-rem קבוע, כלומר הלך והתקצר ככל שהגופן גדל.
+     --shell הוא רוחב העמוד כולו: עמודת הקריאה, האוויר סביבה, ובמסך
+     רחב גם פס הצד. הכותרת העליונה, התוכן והתחתית חולקים אותו, כדי
+     שהכל יעמוד על אותו קו.                                       */
+  --measure:calc(var(--fs) * 30);   /* ≈60 תווים */
+  --gutter:6rem;                    /* אוויר משני צדי עמודת הקריאה */
+  --rail:0rem;                      /* פס הצד — נפתח רק במסך רחב */
+  --rail-gap:0rem;
+  --shell:calc(var(--measure) + var(--gutter) + var(--rail) + var(--rail-gap));
 }
-html[data-size="1"]{--fs:17.5px;--measure:33rem}
-html[data-size="2"]{--fs:20px;  --measure:34rem}
-html[data-size="3"]{--fs:23px;  --measure:32rem;--lh:2.05}
+html[data-size="1"]{--fs:17.5px}
+html[data-size="2"]{--fs:20px}
+html[data-size="3"]{--fs:23px;--lh:2.05}
 
 :root[data-theme="night"]{
   --paper:#0E1013;   --surface:#15181C;  --surface-2:#1B1F24;
-  --ink:#E3E0D9;     --ink-2:#A3A9B2;    --ink-3:#727984;
-  --line:#242830;    --line-2:#2F343C;
+  --ink:#E3E0D9;     --ink-2:#A3A9B2;    --ink-3:#868D99;
+  --line:#242830;    --line-2:#2F343C;   --line-3:#646B77;
   --accent:#84B2C1;  --accent-wash:#17252B;
   --brass:#C7A268;   --brass-wash:#241E12;
   --shadow:none;
@@ -54,8 +69,8 @@ html[data-size="3"]{--fs:23px;  --measure:32rem;--lh:2.05}
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="day"]){
     --paper:#0E1013;   --surface:#15181C;  --surface-2:#1B1F24;
-    --ink:#E3E0D9;     --ink-2:#A3A9B2;    --ink-3:#727984;
-    --line:#242830;    --line-2:#2F343C;
+    --ink:#E3E0D9;     --ink-2:#A3A9B2;    --ink-3:#868D99;
+    --line:#242830;    --line-2:#2F343C;   --line-3:#646B77;
     --accent:#84B2C1;  --accent-wash:#17252B;
     --brass:#C7A268;   --brass-wash:#241E12;
     --shadow:none;
@@ -82,7 +97,11 @@ strong{font-weight:700}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
 ::selection{background:var(--accent-wash);color:var(--ink)}
 
-.wrap{width:100%;max-width:calc(var(--measure) + 6rem);margin-inline:auto;padding-inline:clamp(1.15rem,5vw,2.5rem)}
+/* --wrap-extra: תוספת לעמוד שצריך רוחב אחר. עמוד ההעמקה מקבל
+   תוספת (הריפוד של הקוביות אוכל מרוחב הקריאה), ועמודי הנגישות
+   והפרטיות מקבלים תוספת שלילית שמבטלת את פס הצד שאין להם. */
+.wrap{width:100%;max-width:calc(var(--shell) + var(--wrap-extra,0px));
+  margin-inline:auto;padding-inline:clamp(1.15rem,5vw,2.5rem)}
 .skip{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
   clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
 .skip:focus{position:fixed;width:auto;height:auto;margin:0;overflow:visible;clip:auto;clip-path:none;
@@ -109,7 +128,18 @@ strong{font-weight:700}
   .btn{padding:.45rem .5rem}
   .sizes .btn{padding:.45rem .42rem}
 }
-@media (max-width:360px){.brand{font-size:.78rem}.tools{gap:.15rem}}
+/* 320px היא הרוחב שהתקן דורש שהעמוד יזרום בו בלי גלילה אופקית.
+   בכותרת העליונה יש שם האתר ושישה פקדים, והם לא נכנסו - השורה
+   גלשה החוצה. כאן הכל מתכווץ, ושום פקד לא יורד.                */
+@media (max-width:360px){
+  .topbar .wrap{padding-inline:.7rem}   /* רק הכותרת מתקרבת לשוליים; הטקסט לא */
+  .topbar__in{gap:.3rem}
+  .brand{font-size:.74rem}
+  .tools{gap:.1rem}
+  .btn{padding:.42rem .34rem;gap:.25rem}
+  .sizes .btn{padding:.42rem .3rem}
+  .btn--ghost{padding:.42rem .48rem}
+}
 
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:.35rem;
@@ -121,12 +151,13 @@ strong{font-weight:700}
 .btn:hover{background:var(--surface-2);color:var(--ink)}
 .btn[aria-pressed="true"]{background:var(--accent-wash);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 22%,transparent)}
 .btn svg{width:16px;height:16px;flex:none}
-.btn--ghost{border-color:var(--line-2)}
-.sizes{display:inline-flex;border:1px solid var(--line-2);border-radius:10px;overflow:hidden}
+.btn--ghost{border-color:var(--line-3)}
+.sizes{display:inline-flex;border:1px solid var(--line-3);border-radius:10px;overflow:hidden}
 .sizes .btn{border-radius:0;padding:.5rem .55rem;border:0}
-.sizes .btn+.btn{border-inline-start:1px solid var(--line)}
+.sizes .btn+.btn{border-inline-start:1px solid var(--line-3)}
 .sizes .btn[aria-pressed="true"]{background:var(--accent-wash);color:var(--accent)}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;
+  overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
 
 /* ── hero ─────────────────────────────────────────────────────────── */
 .hero{padding-block:clamp(3rem,9vw,5.5rem) clamp(1.5rem,4vw,2.5rem)}
@@ -164,23 +195,24 @@ section{scroll-margin-top:70px}
 
 /* ── name box ─────────────────────────────────────────────────────── */
 .namebox{display:grid;gap:1rem}
-.namebox h3{font-family:var(--font-ui);font-size:.78rem;font-weight:600;letter-spacing:.13em;color:var(--ink-3)}
+.namebox h2{font-family:var(--font-ui);font-size:.78rem;font-weight:600;letter-spacing:.13em;color:var(--ink-3)}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
 @media (max-width:520px){.fields{grid-template-columns:1fr}}
 .field{display:grid;gap:.4rem}
 .field label{font-family:var(--font-ui);font-size:.8rem;font-weight:500;color:var(--ink-2)}
 .field input{
   font-family:var(--font-text);font-size:1.02em;color:var(--ink);
-  background:var(--paper);border:1px solid var(--line-2);border-radius:10px;
+  background:var(--paper);border:1px solid var(--line-3);border-radius:10px;
   padding:.6rem .75rem;width:100%;line-height:1.6;
   transition:border-color .12s ease,background .12s ease;
 }
-.field input::placeholder{color:var(--ink-3);opacity:.7}
+/* בלי opacity: הוא היה מוריד את הניגודיות של הטקסט המדגים מתחת לסף */
+.field input::placeholder{color:var(--ink-3);opacity:1}
 .field input:focus{outline:none;border-color:var(--accent);background:var(--surface)}
-.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:10px;overflow:hidden;font-family:var(--font-ui)}
+.seg{display:inline-flex;border:1px solid var(--line-3);border-radius:10px;overflow:hidden;font-family:var(--font-ui)}
 .seg button{font-family:inherit;font-size:.85rem;font-weight:500;padding:.55rem 1.1rem;border:0;
   background:transparent;color:var(--ink-2);cursor:pointer;line-height:1.4;transition:background .12s,color .12s}
-.seg button+button{border-inline-start:1px solid var(--line)}
+.seg button+button{border-inline-start:1px solid var(--line-3)}
 .seg button[aria-pressed="true"]{background:var(--accent-wash);color:var(--accent)}
 .namebox__row{display:flex;align-items:end;justify-content:space-between;gap:1rem;flex-wrap:wrap}
 .namebox__row .field{flex:0 0 auto}
@@ -238,7 +270,7 @@ section{scroll-margin-top:70px}
 .bridge svg{width:14px;height:14px}
 
 /* ══ study ════════════════════════════════════════════════════════ */
-.study .wrap{max-width:calc(var(--measure) + 8rem)}
+body.study{--wrap-extra:2rem}
 .section__lead{font-family:var(--font-ui);color:var(--ink-2);font-size:.97rem;line-height:1.75;
   max-width:var(--measure)}
 
@@ -386,6 +418,71 @@ details > summary::marker{content:"";font-size:0}
   color:var(--ink-3);margin-bottom:.4rem;line-height:1.5}
 .voice__t{font-size:.95em;line-height:2;color:var(--ink-2)}
 
+/* ══ עמודי הנגישות והפרטיות ══════════════════════════════════════
+   עמודי טקסט רצוף, בלי פס צד. התוספת השלילית מקזזת אותו מהמעטפת
+   כדי שהעמוד יישאר עמודה אחת מרוכזת ולא ייתלה על צד אחד.        */
+body.legal{--wrap-extra:calc(-1 * (var(--rail) + var(--rail-gap)))}
+.legal h2{font-family:var(--font-ui);font-size:1.05rem;font-weight:600;
+  color:var(--ink);line-height:1.4;margin-top:2.6rem;margin-bottom:.7rem}
+.legal h2:first-of-type{margin-top:.6rem}
+.legal .prose+h2{margin-top:2.4rem}
+.legal ul{margin:.55rem 0 0;padding-inline-start:1.25rem;display:grid;gap:.5rem;
+  max-width:var(--measure)}
+.legal li{font-family:var(--font-ui);font-size:.95rem;line-height:1.8;color:var(--ink-2)}
+.legal li::marker{color:var(--line-3)}
+.legal li strong{color:var(--ink);font-weight:600}
+.legal__updated{margin-top:2.8rem;padding-top:1.2rem;border-top:1px solid var(--line)}
+
+/* ══ פס הצד ═══════════════════════════════════════════════════════
+   תוכן עניינים דביק. קיים רק במסך רחב - בטלפון גוללים, ותוכן
+   עניינים שם הוא עוד מסך לעבור לפני שמגיעים ללימוד.             */
+.toc{display:none;padding-block-start:clamp(3rem,9vw,5.5rem)}  /* בגובה הכותרת העליונה של העמוד */
+.toc__h{font-family:var(--font-ui);font-size:.72rem;font-weight:600;letter-spacing:.13em;
+  color:var(--ink-3);line-height:1;margin:0 0 .85rem .1rem}
+.toc__list{list-style:none;margin:0;padding:0;
+  border-inline-start:1px solid var(--line)}
+.toc__list a{display:flex;align-items:baseline;gap:.55rem;
+  font-family:var(--font-ui);font-size:.85rem;line-height:1.5;font-weight:500;
+  color:var(--ink-2);background:transparent;border:0;
+  border-inline-start:2px solid transparent;margin-inline-start:-1px;
+  padding:.45rem .85rem;
+  transition:color .12s ease,background .12s ease,border-color .12s ease}
+.toc__list a:hover{color:var(--ink);background:var(--surface-2)}
+.toc__list a[aria-current]{color:var(--accent);font-weight:600;
+  border-inline-start-color:var(--accent);background:var(--accent-wash)}
+.toc__n{flex:none;min-width:1ch;font-size:.74rem;font-weight:600;color:var(--ink-3)}
+.toc__list a[aria-current] .toc__n{color:var(--accent)}
+
+/* ══ מסך רחב ══════════════════════════════════════════════════════
+   עד כאן האתר הוא עמודה אחת, וזה בדיוק מה שנכון בטלפון. אלא
+   שהעמודה הזאת נשארה יחידה גם ב-1920 - עמוד קריאה צר שתלוי
+   באמצע מסך ריק, שנראה כמו טלפון שנשכח שם. משם ומעלה נפתח פס
+   צד עם תוכן העניינים, והמעטפת מתרחבת אליו.
+
+   עמודת הקריאה עצמה כמעט אינה גדלה: היא נגזרת מגודל הגופן,
+   ושורה ארוכה מדי קשה לקריאה בדיוק כמו שורה קצרה מדי. מה
+   שמתמלא הוא האוויר שמסביב.                                     */
+@media (min-width:1080px){
+  :root{--gutter:5rem;--rail:14.5rem;--rail-gap:3rem}
+
+  /* שורות מפורשות: בלעדיהן grid-row:1/-1 מתקפל לשורה אחת, ופס
+     הצד לא היה גבוה מספיק כדי ש-sticky יהיה לו לאן לנסוע. */
+  main > .wrap--rail{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) var(--rail);
+    grid-template-rows:repeat(12,auto);
+    column-gap:var(--rail-gap);
+  }
+  main > .wrap--rail > :not(.toc){grid-column:1;min-width:0}
+  .toc{display:block;grid-column:2;grid-row:1 / -1}
+  .toc__in{position:sticky;top:calc(54px + 1.8rem)}
+}
+/* במסך גדול באמת גם השורה מתארכת מעט - 66 תווים במקום 60, עדיין
+   בתוך הטווח הנוח לקריאה - ולא רק השוליים מתנפחים. */
+@media (min-width:1440px){
+  :root{--measure:calc(var(--fs) * 33);--gutter:8rem;--rail:15.5rem;--rail-gap:4rem}
+}
+
 /* ── print ────────────────────────────────────────────────────────── */
 @media print{
   @page{size:A4;margin:11mm 14mm}
@@ -397,6 +494,7 @@ details > summary::marker{content:"";font-size:0}
   .topbar,.toc,.foot__nav,.bridge,.namebox__hint,.no-print,.tools,.skip,
   .expand,.more,.part__lead{display:none!important}
   .wrap{max-width:100%;padding:0}
+  main > .wrap--rail{display:block}   /* פס הצד יורד בהדפסה, וגם הרשת שלו */
   .hero{padding-block:0 6pt}
   .hero__kicker{font-size:7pt;letter-spacing:.1em;margin-bottom:4pt;color:#000}
   .hero h1{font-size:15.5pt;line-height:1.18}

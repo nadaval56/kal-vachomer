@@ -162,7 +162,26 @@
     sync();
   });
 
-  /* ── תוכן עניינים בעמוד הלימוד: סימון החלק הנוכחי ─────────────── */
+  /* ── קפיצה אל פרק סגור ────────────────────────────────────────
+     details סגור הוא תוכן שאינו קיים בעמוד: הדפדפן יגלול אל
+     הכותרת ולא יפתח כלום, והקישור ייראה שבור. לכן פותחים.        */
+  function openTarget(id) {
+    var el = id && document.getElementById(id);
+    if (!el) return;
+    var d = el.closest ? el.closest('details') : null;
+    if (el.tagName === 'DETAILS') d = el;
+    while (d) { d.open = true; d = d.parentElement && d.parentElement.closest('details'); }
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (a) openTarget(a.getAttribute('href').slice(1));
+  });
+  window.addEventListener('hashchange', function () { openTarget(location.hash.slice(1)); });
+  if (location.hash.length > 1) openTarget(location.hash.slice(1));
+
+  /* ── תוכן עניינים: סימון החלק הנוכחי ──────────────────────────
+     aria-current="location" ולא "true": הקישור אינו "הפריט הנבחר",
+     הוא המקום שבו הקורא נמצא עכשיו בעמוד.                        */
   var tocLinks = Array.prototype.slice.call(document.querySelectorAll('.toc a[href^="#"]'));
   if (tocLinks.length && 'IntersectionObserver' in window) {
     var byId = {};
@@ -175,7 +194,7 @@
       entries.forEach(function (e) {
         if (!e.isIntersecting) return;
         tocLinks.forEach(function (a) { a.removeAttribute('aria-current'); });
-        if (byId[e.target.id]) byId[e.target.id].setAttribute('aria-current', 'true');
+        if (byId[e.target.id]) byId[e.target.id].setAttribute('aria-current', 'location');
       });
     }, { rootMargin: '-40% 0px -55% 0px' });
     targets.forEach(function (t) { io.observe(t); });
