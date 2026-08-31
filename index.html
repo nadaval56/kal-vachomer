@@ -20,7 +20,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="סגולת הקל וחומר - לימוד ותפילה לרפואה">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="assets/style.css?v=c8921fce">
+<link rel="stylesheet" href="assets/style.css?v=99ed0a53">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/assistant-hebrew-400-normal.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/assistant-hebrew-600-normal.woff2" crossorigin>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233B6675'/%3E%3Cpath d='M11 22V10m0 6h10m0-6v12' stroke='%23FAF9F6' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
@@ -52,7 +52,21 @@ var t=d.getItem('kv:theme');if(t==='night'||t==='day')r.setAttribute('data-theme
   </div>
 </header>
 <main id="main">
-  <div class="wrap">
+  <div class="wrap wrap--rail">
+
+    <nav class="toc no-print" aria-labelledby="toc-h">
+      <div class="toc__in">
+        <p class="toc__h" id="toc-h">בעמוד הזה</p>
+        <ol class="toc__list">
+          <li><a href="#p-chullin"><span class="toc__n" aria-hidden="true">1</span><span>שילוח הקן</span></a></li>
+          <li><a href="#p-negaim"><span class="toc__n" aria-hidden="true">2</span><span>חסה התורה</span></a></li>
+          <li><a href="#p-chagiga"><span class="toc__n" aria-hidden="true">3</span><span>מזבח הזהב</span></a></li>
+          <li><a href="#p-pesachim"><span class="toc__n" aria-hidden="true">4</span><span>הושע</span></a></li>
+          <li><a href="#p-brachot"><span class="toc__n" aria-hidden="true">5</span><span>שן ועין</span></a></li>
+          <li><a href="#request"><span>הבקשה</span></a></li>
+        </ol>
+      </div>
+    </nav>
 
     <section class="hero">
       <p class="hero__kicker">לשון חכמים, חלק ב, סימן טז</p>
@@ -68,7 +82,7 @@ var t=d.getItem('kv:theme');if(t==='night'||t==='day')r.setAttribute('data-theme
 
     <section class="section no-print" aria-labelledby="name-h">
       <div class="card namebox">
-        <h3 id="name-h">בשביל מי</h3>
+        <h2 id="name-h">בשביל מי</h2>
         <div class="fields">
           <div class="field">
             <label for="patient-name">שם החולה</label>
@@ -318,7 +332,7 @@ var t=d.getItem('kv:theme');if(t==='night'||t==='day')r.setAttribute('data-theme
       </div>
     </section>
 
-    <section class="section" aria-labelledby="req-h">
+    <section class="section" id="request" aria-labelledby="req-h">
       <div class="eyebrow"><h2 id="req-h">הבקשה</h2></div>
       <p class="request-lead">וְאַחַר כָּךְ יֹאמַר בַּקָּשָׁה זוֹ:</p>
       <div class="passage request">
@@ -345,11 +359,16 @@ var t=d.getItem('kv:theme');if(t==='night'||t==='day')r.setAttribute('data-theme
 
   <footer class="foot">
     <div class="wrap">
+      <nav class="foot__nav no-print" aria-label="קישורי האתר">
+        <a href="study/">העמקה</a>
+        <a href="accessibility/">נגישות</a>
+        <a href="privacy/">פרטיות</a>
+      </nav>
       <p>האתר אינו אוסף או שומר מידע כלשהו.</p>
       <p><span class="q">וְרַפֹּא יְרַפֵּא</span> - מכאן שניתן רשות לרופא לרפאות (בבא קמא דף פ״ה). אנו מתפללים לשליחים טובים ולהצלחתם.</p>
     </div>
   </footer>
 </main>
-<script src="assets/app.js?v=058199b1" defer></script>
+<script src="assets/app.js?v=f3b2b0e1" defer></script>
 </body>
 </html>

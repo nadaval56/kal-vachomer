@@ -29,9 +29,9 @@ jobs:
 
       - name: fail if generated HTML is stale
         run: |
-          if ! git diff --quiet -- index.html study/index.html sitemap.xml robots.txt; then
+          if ! git diff --quiet -- index.html study/index.html accessibility/index.html privacy/index.html sitemap.xml robots.txt; then
             echo "::error::הקבצים הבנויים אינם מעודכנים. הריצו: node scripts/build.mjs וקמטו מחדש."
-            git --no-pager diff --stat -- index.html study/index.html sitemap.xml robots.txt
+            git --no-pager diff --stat -- index.html study/index.html accessibility/index.html privacy/index.html sitemap.xml robots.txt
             exit 1
           fi
 
