@@ -148,10 +148,18 @@ strong{font-weight:700}
    והכותרת הראשית שמתחת אומרת ממילא היכן אנחנו.               */
 @media (max-width:560px){
   .brand,.topbar__sp{display:none}
-  .topbar__in{gap:.4rem;min-height:50px;flex-wrap:nowrap}
-  .tools{flex:1;width:100%;display:grid;grid-template-columns:1fr auto 1fr;
-    align-items:center;gap:.3rem}
-  .tools__grp{display:flex;align-items:center;gap:.3rem;min-width:0}
+  .topbar__in{gap:.4rem;min-height:50px}
+
+  /* ה-:has אינו קישוט. חתימת התוכן על הנכסים מגינה מפני CSS ישן מול
+     HTML חדש, אבל לא מפני ההפך: דפדפן שמחזיק בקאש HTML מלפני הקבוצות
+     יקבל את הגיליון החדש עליו. אז ארבעה פקדים נכנסים לרשת של שלוש
+     עמודות - הרביעי יורד לשורה שנייה, ומצב הלילה נמתח על עמודת 1fr.
+     הרשת מוחלת רק כשהקבוצות באמת בעמוד; אחרת חוזרים לשורה הגולשת,
+     שהיא צפופה אבל לא שבורה.                                       */
+  .topbar__in:has(.tools__grp){flex-wrap:nowrap}
+  .tools:has(.tools__grp){flex:1;width:100%;display:grid;
+    grid-template-columns:1fr auto 1fr;align-items:center;gap:.3rem}
+  .tools:has(.tools__grp) .tools__grp{display:flex;align-items:center;gap:.3rem;min-width:0}
   .tools__start{justify-self:start}
   .tools__mid{justify-self:center}
   .tools__end{justify-self:end}
