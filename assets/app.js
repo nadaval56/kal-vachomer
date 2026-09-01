@@ -194,24 +194,4 @@
   window.addEventListener('hashchange', function () { openTarget(location.hash.slice(1)); });
   if (location.hash.length > 1) openTarget(location.hash.slice(1));
 
-  /* ── תוכן עניינים: סימון החלק הנוכחי ──────────────────────────
-     aria-current="location" ולא "true": הקישור אינו "הפריט הנבחר",
-     הוא המקום שבו הקורא נמצא עכשיו בעמוד.                        */
-  var tocLinks = Array.prototype.slice.call(document.querySelectorAll('.toc a[href^="#"]'));
-  if (tocLinks.length && 'IntersectionObserver' in window) {
-    var byId = {};
-    var targets = [];
-    tocLinks.forEach(function (a) {
-      var el = document.getElementById(a.getAttribute('href').slice(1));
-      if (el) { byId[el.id] = a; targets.push(el); }
-    });
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        tocLinks.forEach(function (a) { a.removeAttribute('aria-current'); });
-        if (byId[e.target.id]) byId[e.target.id].setAttribute('aria-current', 'location');
-      });
-    }, { rootMargin: '-40% 0px -55% 0px' });
-    targets.forEach(function (t) { io.observe(t); });
-  }
 })();
