@@ -45,14 +45,12 @@
      --measure הוא עמודת הקריאה, והוא נגזר מגודל הגופן: כשהאות
      גדלה השורה מתרחבת איתה ומספר התווים בשורה נשמר. קודם הוא היה
      נתון ב-rem קבוע, כלומר הלך והתקצר ככל שהגופן גדל.
-     --shell הוא רוחב העמוד כולו: עמודת הקריאה, האוויר סביבה, ובמסך
-     רחב גם פס הצד. הכותרת העליונה, התוכן והתחתית חולקים אותו, כדי
-     שהכל יעמוד על אותו קו.                                       */
+     --shell הוא רוחב העמוד כולו: עמודת הקריאה והאוויר סביבה. הכותרת
+     העליונה, התוכן והתחתית חולקים אותו, כדי שהכל יעמוד על אותו קו,
+     והוא ממורכז - אין רכיב צד שדוחף אותו לצד אחד.                */
   --measure:calc(var(--fs) * 30);   /* ≈60 תווים */
   --gutter:6rem;                    /* אוויר משני צדי עמודת הקריאה */
-  --rail:0rem;                      /* פס הצד — נפתח רק במסך רחב */
-  --rail-gap:0rem;
-  --shell:calc(var(--measure) + var(--gutter) + var(--rail) + var(--rail-gap));
+  --shell:calc(var(--measure) + var(--gutter));
 }
 html[data-size="1"]{--fs:17.5px}
 html[data-size="2"]{--fs:20px}
@@ -327,7 +325,7 @@ section{scroll-margin-top:calc(var(--topbar-h,54px) + 1rem)}
 .bridge svg{width:14px;height:14px}
 
 /* ══ study ════════════════════════════════════════════════════════ */
-body.study{--wrap-extra:2rem}
+body.study{--wrap-extra:2rem}   /* הריפוד של הקוביות אוכל מרוחב הקריאה */
 .section__lead{font-family:var(--font-ui);color:var(--ink-2);font-size:.97rem;line-height:1.75;
   max-width:var(--measure)}
 
@@ -478,7 +476,6 @@ details > summary::marker{content:"";font-size:0}
 /* ══ עמודי הנגישות והפרטיות ══════════════════════════════════════
    עמודי טקסט רצוף, בלי פס צד. התוספת השלילית מקזזת אותו מהמעטפת
    כדי שהעמוד יישאר עמודה אחת מרוכזת ולא ייתלה על צד אחד.        */
-body.legal{--wrap-extra:calc(-1 * (var(--rail) + var(--rail-gap)))}
 .legal h2{font-family:var(--font-ui);font-size:1.05rem;font-weight:600;
   color:var(--ink);line-height:1.4;margin-top:2.6rem;margin-bottom:.7rem}
 .legal h2:first-of-type{margin-top:.6rem}
@@ -490,54 +487,16 @@ body.legal{--wrap-extra:calc(-1 * (var(--rail) + var(--rail-gap)))}
 .legal li strong{color:var(--ink);font-weight:600}
 .legal__updated{margin-top:2.8rem;padding-top:1.2rem;border-top:1px solid var(--line)}
 
-/* ══ פס הצד ═══════════════════════════════════════════════════════
-   תוכן עניינים דביק. קיים רק במסך רחב - בטלפון גוללים, ותוכן
-   עניינים שם הוא עוד מסך לעבור לפני שמגיעים ללימוד.             */
-.toc{display:none;padding-block-start:clamp(3rem,9vw,5.5rem)}  /* בגובה הכותרת העליונה של העמוד */
-.toc__h{font-family:var(--font-ui);font-size:.72rem;font-weight:600;letter-spacing:.13em;
-  color:var(--ink-3);line-height:1;margin:0 0 .85rem .1rem}
-.toc__list{list-style:none;margin:0;padding:0;
-  border-inline-start:1px solid var(--line)}
-.toc__list a{display:flex;align-items:baseline;gap:.55rem;
-  font-family:var(--font-ui);font-size:.85rem;line-height:1.5;font-weight:500;
-  color:var(--ink-2);background:transparent;border:0;
-  border-inline-start:2px solid transparent;margin-inline-start:-1px;
-  padding:.45rem .85rem;
-  transition:color .12s ease,background .12s ease,border-color .12s ease}
-.toc__list a:hover{color:var(--ink);background:var(--surface-2)}
-.toc__list a[aria-current]{color:var(--accent);font-weight:600;
-  border-inline-start-color:var(--accent);background:var(--accent-wash)}
-.toc__n{flex:none;min-width:1ch;font-size:.74rem;font-weight:600;color:var(--ink-3)}
-.toc__list a[aria-current] .toc__n{color:var(--accent)}
-
 /* ══ מסך רחב ══════════════════════════════════════════════════════
-   עד כאן האתר הוא עמודה אחת, וזה בדיוק מה שנכון בטלפון. אלא
-   שהעמודה הזאת נשארה יחידה גם ב-1920 - עמוד קריאה צר שתלוי
-   באמצע מסך ריק, שנראה כמו טלפון שנשכח שם. משם ומעלה נפתח פס
-   צד עם תוכן העניינים, והמעטפת מתרחבת אליו.
-
-   עמודת הקריאה עצמה כמעט אינה גדלה: היא נגזרת מגודל הגופן,
-   ושורה ארוכה מדי קשה לקריאה בדיוק כמו שורה קצרה מדי. מה
-   שמתמלא הוא האוויר שמסביב.                                     */
+   עד כאן האתר הוא עמודה אחת, וזה בדיוק מה שנכון בטלפון. במסך רחב
+   העמודה מתרחבת - אבל לא בלי גבול: שורה של 100 תווים קשה לקריאה
+   בדיוק כמו שורה של 30, ולכן מה שמתמלא מעבר לכך הוא האוויר שמסביב,
+   בשווה משני הצדדים.                                              */
 @media (min-width:1080px){
-  :root{--gutter:5rem;--rail:14.5rem;--rail-gap:3rem}
-
-  /* שורות מפורשות: בלעדיהן grid-row:1/-1 מתקפל לשורה אחת, ופס
-     הצד לא היה גבוה מספיק כדי ש-sticky יהיה לו לאן לנסוע. */
-  main > .wrap--rail{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) var(--rail);
-    grid-template-rows:repeat(12,auto);
-    column-gap:var(--rail-gap);
-  }
-  main > .wrap--rail > :not(.toc){grid-column:1;min-width:0}
-  .toc{display:block;grid-column:2;grid-row:1 / -1}
-  .toc__in{position:sticky;top:calc(var(--topbar-h,54px) + 1.5rem)}
+  :root{--measure:calc(var(--fs) * 36);--gutter:7rem}
 }
-/* במסך גדול באמת גם השורה מתארכת מעט - 66 תווים במקום 60, עדיין
-   בתוך הטווח הנוח לקריאה - ולא רק השוליים מתנפחים. */
 @media (min-width:1440px){
-  :root{--measure:calc(var(--fs) * 33);--gutter:8rem;--rail:15.5rem;--rail-gap:4rem}
+  :root{--measure:calc(var(--fs) * 40);--gutter:9rem}
 }
 
 /* ── print ────────────────────────────────────────────────────────── */
@@ -548,10 +507,9 @@ body.legal{--wrap-extra:calc(-1 * (var(--rail) + var(--rail-gap)))}
   :root,html[data-size="1"],html[data-size="2"],html[data-size="3"]{
     --fs:9.6pt;--lh:1.62;--measure:100%}
   html,body{background:#fff!important;color:#000!important}
-  .topbar,.toc,.foot__nav,.bridge,.namebox__hint,.no-print,.tools,.skip,
+  .topbar,.foot__nav,.bridge,.namebox__hint,.no-print,.tools,.skip,
   .expand,.more,.part__lead{display:none!important}
   .wrap{max-width:100%;padding:0}
-  main > .wrap--rail{display:block}   /* פס הצד יורד בהדפסה, וגם הרשת שלו */
   .hero{padding-block:0 6pt}
   .hero__kicker{font-size:7pt;letter-spacing:.1em;margin-bottom:4pt;color:#000}
   .hero h1{font-size:15.5pt;line-height:1.18}

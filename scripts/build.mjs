@@ -120,20 +120,6 @@ ${body}
 `;
 }
 
-/* ── תוכן עניינים ────────────────────────────────────────────────
-   מוצג רק במסך רחב, שם ממילא יש מקום פנוי משני צדי עמודת הקריאה.
-   הסימון של החלק הנוכחי נעשה ב-app.js.                          */
-function toc(title, items) {
-  return `    <nav class="toc no-print" aria-labelledby="toc-h">
-      <div class="toc__in">
-        <p class="toc__h" id="toc-h">${esc(title)}</p>
-        <ol class="toc__list">
-${join(items, (it) => `          <li><a href="#${esc(it.id)}">${it.n ? `<span class="toc__n" aria-hidden="true">${esc(it.n)}</span>` : ''}<span>${esc(it.label)}</span></a></li>`)}
-        </ol>
-      </div>
-    </nav>`;
-}
-
 /* ── תחתית ───────────────────────────────────────────────────────
    הקישורים לנגישות ולפרטיות יושבים בכל עמוד: הצהרת נגישות שאי
    אפשר להגיע אליה מכל מקום אינה שווה הרבה.                      */
@@ -209,16 +195,10 @@ ${join(t.request[key], (l) => `          <p>${html(l)}</p>`)}
 ${key === 'female' ? `          <p class="note" style="margin-top:.4rem">${esc(t.request.femaleNote)}</p>` : ''}
         </div>`;
 
-  const tocItems = t.passages
-    .map((p) => ({ id: `p-${p.id}`, n: p.n, label: p.label }))
-    .concat([{ id: 'request', label: t.request.title }]);
-
   const body = `
 ${topbar({ here: 'pray' })}
 <main id="main">
-  <div class="wrap wrap--rail">
-
-${toc('בעמוד הזה', tocItems)}
+  <div class="wrap">
 
     <section class="hero">
       <p class="hero__kicker">${esc(t.meta.source)}</p>
@@ -398,14 +378,10 @@ ${join(idea.list, (x, i) => `              <li${i < 3 ? ' class="is-paired"' : '
     prose(om.explain.slice(2))
   ].join('\n') });
 
-  const tocItems = [inst, idea, demo, om].map((x) => ({ id: `part-${x.n}`, n: x.n, label: x.title }));
-
   const body = `
 ${topbar({ base: '../', here: 'study' })}
 <main id="main" class="study">
-  <div class="wrap wrap--rail">
-
-${toc('ארבעת החלקים', tocItems)}
+  <div class="wrap">
 
     <section class="hero">
       <p class="hero__kicker">${esc(texts.meta.source)}</p>
