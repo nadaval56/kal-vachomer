@@ -26,6 +26,7 @@ const stamp = (rel) => {
 const CSS = stamp('assets/style.css');
 const OG = new URL(stamp('assets/og.png'), texts.meta.siteUrl).href;
 const JS = stamp('assets/app.js');
+const SISTER_JS = stamp('assets/sister.js');
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const html = (s) => String(s);               /* שדות שמותר בהם תגיות — נכתבים בידינו */
@@ -120,6 +121,51 @@ ${body}
 `;
 }
 
+/* ── עוד אתרים שלי ──────────────────────────────────────────────
+   אותו פס כמו בשאר האתרים של נדב (המקור ב-dronexam.co.il, ריפו RATA).
+   קישורים בלבד: שום דבר לא נטען מהאתרים האלה. הרשימה כתובה פעמיים:
+   העותק השני רק כדי ש-assets/sister.js יגלול בלולאה רציפה; הוא מוסתר
+   מקורא המסך ומהמקלדת, וב-CSS נעלם לגמרי במצב "בלי תנועה".
+   [אימוג'י, כתובת, טקסט הקישור, המשך שאינו קישור]               */
+const SISTER_INVITE = 'https://chat.whatsapp.com/JPkp1hyk4J938apVTFu6J1';
+const SISTER_SITES = [
+  ['🔭', SISTER_INVITE, 'קבוצת ווטסאפ · עדכוני אסטרונומיה יומיים (קבוצה שקטה)', ''],
+  ['🩻', 'https://roentgen.co.il/', 'רנטגן · לראות מבפנים', ''],
+  ['☀️', 'https://sunspots.co.il/', 'השמש היום · כתמי שמש בזמן אמת', ''],
+  ['📜', 'https://geniza.co.il/', 'הגניזה הקהירית', ''],
+  ['🛠️', 'https://making-il.co.il/', 'מייקינג', ' · יצירה טכנולוגית'],
+  ['💶', 'https://banknote.co.il/', 'Banknote · שטרות ומטבעות', ''],
+  ['🛩️', 'https://dronexam.co.il/', 'לעוף לשמיים · מבחן רת"א לרחפנים', ''],
+  ['🌱', 'https://holisticcenter.co.il/', 'מעט צרי · רפואה משלימה', ''],
+  ['🛸', 'https://pursue.co.il/', 'PURSUE · ארכיון עב"מים', ''],
+  ['🌍', 'https://quake.co.il/', 'רעידת אדמה · רעידות היסטוריות', ''],
+  ['📅', 'https://heb-cal.co.il/', 'לוח עברי', ''],
+  ['🧠', 'https://cranialnerves.co.il/', 'עצבי הגולגולת · 12 זוגות העצבים', '']
+];
+function sister(base = '') {
+  const items = (clone) => SISTER_SITES.map(([e, url, text, tail]) => {
+    const tab = clone ? ' tabindex="-1"' : '';
+    const icon = `<span aria-hidden="true">${e}</span>`;
+    if (tail) return `          <span class="sister-item">${icon} <a href="${esc(url)}" rel="noopener"${tab}>${esc(text)}</a>${esc(tail)}</span>`;
+    const cls = url === SISTER_INVITE ? ' class="sister-invite"' : '';
+    return `          <a href="${esc(url)}" rel="noopener"${cls}${tab}>${icon} ${esc(text)}</a>`;
+  }).join('\n');
+  return `      <nav class="sister no-print" aria-label="האתרים הנוספים שלי">
+        <span class="sister-lbl">עוד אתרים שלי</span>
+        <div class="sister-view">
+          <div class="sister-track">
+        <div class="sister-set">
+${items(false)}
+        </div>
+        <div class="sister-set sister-clone" aria-hidden="true">
+${items(true)}
+        </div>
+          </div>
+        </div>
+      </nav>
+      <script src="${base}${SISTER_JS}" defer></script>`;
+}
+
 /* ── תחתית ───────────────────────────────────────────────────────
    הקישורים לנגישות ולפרטיות יושבים בכל עמוד: הצהרת נגישות שאי
    אפשר להגיע אליה מכל מקום אינה שווה הרבה.                      */
@@ -138,6 +184,7 @@ function foot({ base = '', here }) {
         ${nav}
       </nav>
 ${join(texts.footer.lines, (l) => `      <p>${html(l)}</p>`)}
+${sister(base)}
     </div>
   </footer>`;
 }

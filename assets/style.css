@@ -605,3 +605,23 @@ details > summary::marker{content:"";font-size:0}
 .voice__t{font-size:.95em;line-height:2;color:var(--ink-2)}
 
 @media print{.expand{display:none}}
+
+/* ── עוד אתרים שלי ─────────────────────────────────────────────
+   פס דק בתחתית כל עמוד (scripts/build.mjs), כמו בשאר האתרים של נדב.
+   אזור גלילה רגיל, ש-assets/sister.js מזיז לאט כשלא נוגעים בו.
+   במצב "בלי תנועה" ההעתק מוסתר והפס נשאר לגלילה ביד.            */
+.sister{display:flex;align-items:center;gap:.6rem;margin-top:1.6rem;min-width:0;line-height:1.6;font-family:var(--font-ui)}
+.sister-lbl{flex:none;font-size:.74rem;color:var(--ink-3);white-space:nowrap}
+.sister-view{flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain;
+  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 1.25rem,#000 calc(100% - 1.25rem),transparent 100%);
+          mask-image:linear-gradient(to right,transparent 0,#000 1.25rem,#000 calc(100% - 1.25rem),transparent 100%)}
+.sister-view::-webkit-scrollbar{display:none}
+.sister-track{display:flex;width:max-content}
+.sister-set{display:flex;gap:.5rem;padding-inline-end:.5rem}
+.sister a,.sister .sister-item{flex:none;white-space:nowrap;font-size:.74rem;color:var(--ink-3);text-decoration:none;background:var(--surface);border:1px solid var(--line-2);border-radius:999px;padding:.15rem .75rem}
+.sister a:hover{color:var(--accent);border-color:var(--line-3)}
+.sister a.sister-invite{color:var(--accent);border-color:var(--accent)}
+.sister .sister-item a{border:0;padding:0;border-radius:0;background:none;font-size:inherit;color:inherit;text-decoration:underline;text-underline-offset:2px}
+.sister .sister-item a:hover{color:var(--accent)}
+@media (prefers-reduced-motion:reduce){.sister-clone{display:none}}
+@media print{.sister{display:none}}
