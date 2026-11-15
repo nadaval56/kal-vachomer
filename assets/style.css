@@ -487,6 +487,61 @@ details > summary::marker{content:"";font-size:0}
 .legal li strong{color:var(--ink);font-weight:600}
 .legal__updated{margin-top:2.8rem;padding-top:1.2rem;border-top:1px solid var(--line)}
 
+/* ══ עמודי התוכן (שאלות ותשובות, הבן איש חי, לשון חכמים, הבני יששכר) ══
+   אותה עמודה ואותם רכיבים כמו בהעמקה; כאן רק מה שנוסף: עובדות, טבלה,
+   רשימת מקורות וקישורים פנימיים. צבעים מתוך :root בלבד, כדי שיעמדו
+   בניגודיות שחושבה שם.                                            */
+body.article{--wrap-extra:2rem}
+.article__body h2{font-family:var(--font-ui);font-size:1.1rem;font-weight:600;
+  color:var(--ink);line-height:1.4;margin-top:2.8rem;margin-bottom:.75rem}
+.article__body h2:first-child{margin-top:0}
+.article__body .say+.prose,.article__body .say+.bridges{margin-top:1rem}
+.article__body .prose,.article__body .bul{max-width:var(--measure)}
+
+.facts{margin:0 0 .5rem;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.fact{display:grid;grid-template-columns:7.5rem 1fr;gap:1rem;padding:.75rem 1rem}
+.fact+.fact{border-top:1px solid var(--line)}
+.fact dt{font-family:var(--font-ui);font-size:.8rem;font-weight:600;color:var(--ink-3);padding-top:.15rem}
+.fact dd{margin:0;font-family:var(--font-ui);font-size:.95rem;line-height:1.7;color:var(--ink)}
+@media (max-width:560px){.fact{grid-template-columns:1fr;gap:.15rem}}
+
+.bul{margin:.6rem 0 0;padding-inline-start:1.25rem;display:grid;gap:.55rem}
+.bul li{font-family:var(--font-ui);font-size:.95rem;line-height:1.8;color:var(--ink-2)}
+.bul li::marker{color:var(--line-3)}
+.bul li strong{color:var(--ink);font-weight:600}
+
+.tbl-wrap{margin-top:1.1rem;border:1px solid var(--line);border-radius:12px;overflow-x:auto;background:var(--surface)}
+.tbl{width:100%;border-collapse:collapse;font-size:1em}
+.tbl th,.tbl td{padding:.55rem .9rem;text-align:start;line-height:1.7;vertical-align:top}
+.tbl thead th{font-family:var(--font-ui);font-size:.8rem;font-weight:600;color:var(--ink-3);
+  background:var(--surface-2);border-bottom:1px solid var(--line-2)}
+.tbl tbody tr+tr th,.tbl tbody tr+tr td{border-top:1px solid var(--line)}
+.tbl td{color:var(--ink)}
+.tbl td+td{color:var(--accent)}
+.tbl .tbl__n{width:2.6rem;font-family:var(--font-ui);font-size:.8rem;font-weight:600;color:var(--ink-3);text-align:center}
+.tbl tbody tr:first-child td{font-weight:600}
+.tbl-wrap+.micro{margin-top:.7rem}
+
+.bridges{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.2rem}
+
+.srcs{margin:.4rem 0 0;padding-inline-start:1.25rem;display:grid;gap:.4rem}
+.srcs li{font-family:var(--font-ui);font-size:.88rem;line-height:1.7;color:var(--ink-3)}
+.srcs li::marker{color:var(--line-3)}
+
+.qa .part__title{font-size:1rem;line-height:1.5;align-items:flex-start}
+.qa .part__title .chev{margin-top:.5em}
+.qa__src{margin-top:1.2rem;padding-top:.9rem;border-top:1px solid var(--line);
+  font-family:var(--font-ui);font-size:.82rem;line-height:1.8;color:var(--ink-3)}
+.qa__src span{font-weight:600}
+
+.rel{display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:.6rem}
+.rel__a{display:grid;gap:.2rem;padding:.9rem 1rem;border:1px solid var(--line);border-radius:12px;
+  background:var(--surface);color:var(--ink)}
+.rel__a:hover{border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.rel__t{font-family:var(--font-ui);font-weight:600;font-size:.95rem;color:var(--accent)}
+.rel__s{font-family:var(--font-ui);font-size:.82rem;line-height:1.6;color:var(--ink-3)}
+@media print{.rel,.bridges,.qa__src{display:none}}
+
 /* ══ מסך רחב ══════════════════════════════════════════════════════
    עד כאן האתר הוא עמודה אחת, וזה בדיוק מה שנכון בטלפון. במסך רחב
    העמודה מתרחבת - אבל לא בלי גבול: שורה של 100 תווים קשה לקריאה
