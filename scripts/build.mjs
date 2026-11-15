@@ -13,6 +13,9 @@ const read = (p) => JSON.parse(readFileSync(resolve(ROOT, p), 'utf8'));
 const texts = read('data/texts.json');
 const study = read('data/study.json');
 const legal = read('data/legal.json');
+const pages = read('data/pages.json');
+/* עמודי התוכן, בסדר שבו הם מופיעים בניווט. המפתח הוא גם ה-here של העמוד. */
+const ARTICLES = ['faq', 'benIshChai', 'leshonChachamim', 'bneiYissaschar'];
 const commentary = (() => { try { return read('data/commentary.json'); } catch { return { refs: {} }; } })();
 
 /* חתימת תוכן על הנכסים. בלעדיה דפדפן שכבר ביקר באתר מקבל CSS ישן
@@ -174,6 +177,7 @@ function foot({ base = '', here }) {
   const nav = [
     here === 'pray' ? null : link(`${base}`, 'הלימוד והתפילה'),
     here === 'study' ? null : link(`${base}study/`, 'העמקה'),
+    ...ARTICLES.map((k) => (here === k ? null : link(`${base}${pages[k].slug}`, pages[k].nav))),
     here === 'accessibility' ? null : link(`${base}${legal.accessibility.slug}`, legal.accessibility.navLabel),
     here === 'privacy' ? null : link(`${base}${legal.privacy.slug}`, legal.privacy.navLabel)
   ].filter(Boolean).join('\n        ');
@@ -193,7 +197,8 @@ function topbar({ base = '', here }) {
   const other = here === 'pray'
     ? `<a class="btn btn--ghost" href="${base}study/">העמקה</a>`
     : `<a class="btn btn--ghost" href="${base}">להתפלל</a>`;
-  const crumb = { study: 'העמקה', accessibility: legal.accessibility.title, privacy: legal.privacy.title }[here];
+  const crumb = { study: 'העמקה', accessibility: legal.accessibility.title, privacy: legal.privacy.title }[here]
+    || (pages[here] && pages[here].nav);
   return `<header class="topbar no-print">
   <div class="wrap topbar__in">
     <a class="brand" href="${base || './'}">סגולת הקל וחומר${crumb ? `<span> · ${esc(crumb)}</span>` : ''}</a>
@@ -300,6 +305,8 @@ ${reqVariant('female')}
       </div>
     </section>
 
+
+${related({ here: 'pray' })}
   </div>
 
 ${foot({ here: 'pray' })}
@@ -444,6 +451,7 @@ ${partC}
 ${partD}
     </section>
 
+${related({ base: '../', here: 'study' })}
   </div>
 
 ${foot({ base: '../', here: 'study' })}
@@ -534,12 +542,156 @@ ${foot({ base: '../', here: key })}
   });
 }
 
+/* ══ עמודי תוכן: שאלות ותשובות, הבן איש חי, לשון חכמים, הבני יששכר ══
+   כולם מ-data/pages.json. ציטוט מקור מסומן כמו בעמוד ההעמקה, וכל עמוד
+   נחתם ברשימת מקורות עם קישור לספריא - שם אפשר לבדוק כל מילה.     */
+
+/* "להמשך קריאה": קישורים פנימיים. href יחסי לשורש האתר. */
+const bridges = (links, base) => (links && links.length) ? `        <p class="bridges no-print">
+${join(links, ([href, label]) => `          <a class="bridge" href="${base}${esc(href)}">${esc(label)}${ico.arrow}</a>`)}
+        </p>` : '';
+
+const sourceList = (list) => (list && list.length) ? `        <ul class="srcs">
+${join(list, ([label, url]) => `          <li><a href="${esc(url)}" rel="noopener">${esc(label)}</a></li>`)}
+        </ul>` : '';
+
+/* עוד עמודים - בתחתית העמוד הראשי, עמוד ההעמקה וכל עמוד תוכן.
+   רשת קישורים פנימיים היא מה שמראה למנוע חיפוש שהעמודים שייכים יחד. */
+function related({ base = '', here }) {
+  const all = [['study/', 'העמקה', 'מה עומד מאחורי סדר הלימוד'],
+    ...ARTICLES.map((k) => [pages[k].slug, pages[k].nav, pages[k].subtitle.split('.')[0]])]
+    .filter(([href]) => href !== (here === 'study' ? 'study/' : pages[here]?.slug));
+  return `    <section class="section no-print" aria-labelledby="rel-h">
+      <div class="eyebrow"><h2 id="rel-h">עוד באתר</h2></div>
+      <div class="rel">
+${join(all, ([href, label, sub]) => `        <a class="rel__a" href="${base}${esc(href)}"><span class="rel__t">${esc(label)}</span><span class="rel__s">${esc(sub)}</span></a>`)}
+      </div>
+    </section>`;
+}
+
+function articleShell({ key, d, inner, jsonld }) {
+  const base = '../';
+  const body = `
+${topbar({ base, here: key })}
+<main id="main" class="article">
+  <div class="wrap">
+
+    <section class="hero">
+      <p class="hero__kicker">${esc(d.kicker)}</p>
+      <h1>${esc(d.title)}</h1>
+      <p class="hero__sub">${esc(d.subtitle)}</p>
+      <div class="hero__rule"></div>
+    </section>
+
+${inner}
+
+${related({ base, here: key })}
+  </div>
+
+${foot({ base, here: key })}
+</main>`;
+  const site = new URL('', texts.meta.siteUrl).href;
+  const url = new URL(d.slug, texts.meta.siteUrl).href;
+  const title = `${d.title} - ${texts.meta.titlePlain}`;
+  return page({
+    title, desc: d.desc, base, path: d.slug, bodyClass: 'article', body,
+    jsonld: {
+      '@context': 'https://schema.org',
+      '@graph': [
+        { '@type': 'WebPage', '@id': url, url, name: title, description: d.desc, inLanguage: 'he',
+          isPartOf: { '@id': `${site}#website` },
+          breadcrumb: { '@type': 'BreadcrumbList', itemListElement: [
+            { '@type': 'ListItem', position: 1, name: texts.meta.titlePlain, item: site },
+            { '@type': 'ListItem', position: 2, name: d.title, item: url }] } },
+        ...(jsonld ? [jsonld] : [])
+      ]
+    }
+  });
+}
+
+const quoteBlock = (q) => q ? `        <blockquote class="say">
+          <p class="say__src">${esc(q.source)}</p>
+${join(q.lines, (l) => `          <p>${html(l)}</p>`)}
+        </blockquote>` : '';
+
+const prosePs = (lines) => join(lines, (l) => `        <p class="prose">${html(l)}</p>`);
+
+function renderArticle(key) {
+  const d = pages[key];
+  const section = (s) => [
+    s.h ? `        <h2>${esc(s.h)}</h2>` : '',
+    s.facts ? `        <dl class="facts">
+${join(s.facts, ([k, v]) => `          <div class="fact"><dt>${esc(k)}</dt><dd>${html(v)}</dd></div>`)}
+        </dl>` : '',
+    prosePs(s.p),
+    s.list ? `        <ul class="bul">\n${join(s.list, (l) => `          <li>${html(l)}</li>`)}\n        </ul>` : '',
+    quoteBlock(s.quote),
+    prosePs(s.after),
+    s.table ? `        <div class="tbl-wrap">
+          <table class="tbl">
+            <caption class="sr">${esc(s.table.caption)}</caption>
+            <thead><tr>${s.table.head.map((h, i) => `<th scope="col"${i === 0 ? ' class="tbl__n"' : ''}>${h ? esc(h) : '<span class="sr">מספר</span>'}</th>`).join('')}</tr></thead>
+            <tbody>
+${join(s.table.rows, (r) => `              <tr><th scope="row" class="tbl__n">${esc(r[0])}</th>${r.slice(1).map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`)}
+            </tbody>
+          </table>
+        </div>
+        <p class="micro">${esc(s.table.note)}</p>` : '',
+    bridges(s.links, '../')
+  ].filter(Boolean).join('\n');
+
+  const inner = `    <section class="section article__body">
+${join(d.sections, section)}
+        <h2>מקורות</h2>
+${sourceList(d.sources)}
+    </section>`;
+
+  return articleShell({ key, d, inner });
+}
+
+/* שאלות ותשובות: כל שאלה נפתחת בנפרד, כמו חלקי עמוד ההעמקה. הטקסט
+   כולו נמצא ב-HTML גם כשהשאלה סגורה, וזוחלים קוראים אותו. */
+function renderFaq() {
+  const d = pages.faq;
+  const strip = (s) => String(s).replace(/<[^>]+>/g, '');
+  const items = join(d.items, (it, i) => `
+    <details class="part qa" id="${esc(it.id)}"${i === 0 ? ' open' : ''}>
+      <summary>
+        <span class="part__n" aria-hidden="true">${i + 1}</span>
+        <span class="part__head"><h2 class="part__title">${CHEV}${esc(it.q)}</h2></span>
+      </summary>
+      <div class="part__body">
+${prosePs(it.a)}
+${bridges(it.links, '../')}
+        <p class="qa__src"><span>מקורות:</span> ${(it.sources || []).map(([l, u]) => `<a href="${esc(u)}" rel="noopener">${esc(l)}</a>`).join(' · ')}</p>
+      </div>
+    </details>`);
+
+  const inner = `    <section class="section" style="padding-block:0 1.8rem">
+      <div class="lede">
+${join(d.intro, (l) => `        <p>${html(l)}</p>`)}
+      </div>
+    </section>
+
+    <section class="parts">${items}
+    </section>`;
+
+  const url = new URL(d.slug, texts.meta.siteUrl).href;
+  return articleShell({ key: 'faq', d, inner, jsonld: {
+    '@type': 'FAQPage', '@id': `${url}#faq`, inLanguage: 'he',
+    mainEntity: d.items.map((it) => ({
+      '@type': 'Question', name: it.q,
+      acceptedAnswer: { '@type': 'Answer', text: it.a.map(strip).join(' ') }
+    }))
+  } });
+}
+
 /* ── robots + sitemap ──────────────────────────────────────────
    מה שאין לו נתיב מוצהר, מנוע חיפוש צריך לנחש. שני הקבצים נוצרים
    מ־siteUrl כדי שלא ייווצר פער בין הכתובת שבמטא לכתובת שבמפה.
    בלי lastmod: תאריך שמשתנה בכל build הוא רעש בהיסטוריה, וגוגל
    ממילא הולך אחרי מה שהוא רואה בעמוד.                           */
-const PAGES = ['', 'study/', legal.accessibility.slug, legal.privacy.slug];
+const PAGES = ['', 'study/', ...ARTICLES.map((k) => pages[k].slug), legal.accessibility.slug, legal.privacy.slug];
 const abs = (rel) => new URL(rel, texts.meta.siteUrl).href;
 
 const sitemap = () => `<?xml version="1.0" encoding="UTF-8"?>
@@ -561,6 +713,8 @@ Sitemap: ${abs('sitemap.xml')}
 const out = [
   ['index.html', renderPray()],
   ['study/index.html', renderStudy()],
+  ['faq/index.html', renderFaq()],
+  ...ARTICLES.filter((k) => k !== 'faq').map((k) => [`${pages[k].slug}index.html`, renderArticle(k)]),
   [`${legal.accessibility.slug}index.html`, renderLegal('accessibility')],
   [`${legal.privacy.slug}index.html`, renderLegal('privacy')],
   ['sitemap.xml', sitemap()],
